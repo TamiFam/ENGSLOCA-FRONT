@@ -4,13 +4,15 @@ import { loginUser as apiLogin, registerUser as apiRegister } from "../../featur
 
 export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ username: "", password: "" }); // 👈 ИЗМЕНИЛ: email → username
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const { login: authLogin } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation(); // 🔥 ДОБАВИЛ: предотвращаем всплытие
+    
     setLoading(true);
     setFormError("");
 
@@ -26,7 +28,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
       authLogin(response.data.token, response.data.user);
       
       // Закрываем модалку и вызываем успех
-      setFormData({ username: "", password: "" }); // 👈 ИЗМЕНИЛ: email → username
+      setFormData({ username: "", password: "" });
       onSuccess();
     } catch (err) {
       console.error("Auth error:", err);
@@ -34,6 +36,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 🔥 ДОБАВИЛ: отдельный обработчик для мобильных касаний
+  const handleMobileSubmit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSubmit(e);
   };
 
   const handleChange = (e) => {
@@ -46,21 +55,31 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
   const handleSwitchMode = () => {
     setIsLogin(!isLogin);
     setFormError("");
-    setFormData({ username: "", password: "" }); // 👈 ИЗМЕНИЛ: email → username
+    setFormData({ username: "", password: "" });
+  };
+
+  // 🔥 ДОБАВИЛ: обработчик закрытия по оверлею
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={handleOverlayClick} // 🔥 ДОБАВИЛ: закрытие по клику на оверлей
+    >
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 mx-2">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
             {isLogin ? "Вход в систему" : "Регистрация"}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            className="text-gray-400 hover:text-gray-600 transition-colors duration-200 w-10 h-10 flex items-center justify-center" // 🔥 ДОБАВИЛ: размер для касания
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -76,22 +95,25 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Имя пользователя {/* 👈 ИЗМЕНИЛ: Email → Имя пользователя */}
+            <label className="block text-sm font-medium text-gray-700 mb-2"> {/* 🔥 ИЗМЕНИЛ: mb-1 → mb-2 */}
+              Имя пользователя
             </label>
             <input
               type="text" 
               name="username"
+              value={formData.username}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
+              // 🔥 ИЗМЕНИЛ: py-2 → py-3, добавил text-base для iOS
               placeholder="Ваше имя" 
-              minLength="2" 
+              minLength="2"
+              autoComplete="username" // 🔥 ДОБАВИЛ: для автозаполнения
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2"> {/* 🔥 ИЗМЕНИЛ: mb-1 → mb-2 */}
               Пароль
             </label>
             <input
@@ -100,25 +122,35 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              // 🔥 ИЗМЕНИЛ: py-2 → py-3, добавил text-base для iOS
               placeholder="••••••••"
               minLength="6"
+              autoComplete={isLogin ? "current-password" : "new-password"} // 🔥 ДОБАВИЛ: для автозаполнения
             />
           </div>
 
           <button
             type="submit"
+            onClick={handleSubmit}
+            onTouchEnd={handleMobileSubmit} // 🔥 ДОБАВИЛ: обработчик для мобильных
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] text-base"
+            // 🔥 ИЗМЕНИЛ: py-3 → py-4, добавил min-h-[48px] и text-base
           >
-            {loading ? "Загрузка..." : (isLogin ? "Войти" : "Зарегистрироваться")}
+            {loading ? "⏳ Загрузка..." : (isLogin ? "Войти" : "Зарегистрироваться")}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 pt-4 border-t border-gray-200"> {/* 🔥 ИЗМЕНИЛ: добавил отступы и границу */}
           <button
             onClick={handleSwitchMode}
-            className="text-blue-600 hover:text-blue-800 transition-colors duration-200 text-sm font-medium"
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              handleSwitchMode();
+            }}
+            className="w-full text-blue-600 hover:text-blue-800 transition-colors duration-200 text-sm font-medium py-2" 
+            // 🔥 ДОБАВИЛ: w-full и py-2 для лучшего касания
           >
             {isLogin ? "Нет аккаунта? Зарегистрироваться" : "Уже есть аккаунт? Войти"}
           </button>
