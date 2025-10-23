@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* Шрифты */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  background-color: white;
+  color: black;
+}
+
+/* Можно добавить кастомные классы для шрифтов */
+.font-display {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+}
