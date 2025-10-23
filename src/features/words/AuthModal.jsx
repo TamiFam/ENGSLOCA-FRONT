@@ -131,15 +131,32 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
           </div>
 
           <button
-            type="submit"
-            onClick={handleSubmit}
-            onTouchEnd={handleMobileSubmit} // 🔥 ДОБАВИЛ: обработчик для мобильных
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] text-base"
-            // 🔥 ИЗМЕНИЛ: py-3 → py-4, добавил min-h-[48px] и text-base
-          >
-            {loading ? "⏳ Загрузка..." : (isLogin ? "Войти" : "Зарегистрироваться")}
-          </button>
+  type="button" // 🔥 МЕНЯЕМ на type="button"
+  onClick={(e) => {
+    console.log('📱 CLICK DETECTED');
+    e.preventDefault();
+    e.stopPropagation();
+    handleSubmit(e);
+  }}
+  onTouchStart={(e) => {
+    console.log('📱 TOUCH DETECTED');
+    e.preventDefault();
+    e.stopPropagation();
+    handleSubmit(e);
+  }}
+  onTouchEnd={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }}
+  style={{
+    minHeight: '50px',
+    fontSize: '18px',
+    WebkitTapHighlightColor: 'transparent'
+  }}
+  className="w-full bg-blue-600 text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-0"
+>
+  {loading ? '⏳ Загрузка...' : (isLogin ? 'ВОЙТИ' : 'ЗАРЕГИСТРИРОВАТЬСЯ')}
+</button>
         </form>
 
         <div className="mt-6 pt-4 border-t border-gray-200"> {/* 🔥 ИЗМЕНИЛ: добавил отступы и границу */}
@@ -154,6 +171,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
           >
             {isLogin ? "Нет аккаунта? Зарегистрироваться" : "Уже есть аккаунт? Войти"}
           </button>
+          <button
+  onClick={() => alert('CLICK WORKING')}
+  onTouchEnd={() => alert('TOUCH WORKING')}
+  style={{ padding: '20px', background: 'red', color: 'white' }}
+>
+  ТЕСТ КНОПКИ
+</button>
         </div>
       </div>
     </div>
