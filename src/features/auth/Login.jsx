@@ -4,19 +4,23 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // 🔥 ИЗМЕНИЛ: email → username
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('🔐 Login attempt:', { username, password }); // 🔥 ДОБАВИЛ лог
+    
     try {
-      const res = await loginUser({ email, password });
+      const res = await loginUser({ username, password }); // 🔥 ИЗМЕНИЛ: email → username
+      console.log('✅ Login success:', res.data);
       login(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
-      alert("Ошибка входа");
+      console.error('❌ Login error:', err);
+      alert("Ошибка входа: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -25,10 +29,11 @@ export default function Login() {
       <h1 className="text-xl font-bold">Вход</h1>
       <input
         className="border p-2 w-full"
-        type="username"
-        placeholder="username"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        type="text" // 🔥 ИЗМЕНИЛ: username → text
+        placeholder="Имя пользователя" // 🔥 ИЗМЕНИЛ: username → Имя пользователя
+        value={username} // 🔥 ИЗМЕНИЛ: email → username
+        onChange={(e) => setUsername(e.target.value)} // 🔥 ИЗМЕНИЛ: setEmail → setUsername
+        required
       />
       <input
         className="border p-2 w-full"
@@ -36,8 +41,12 @@ export default function Login() {
         placeholder="Пароль"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        required
       />
-      <button className="bg-blue-500 text-white px-4 py-2 rounded">
+      <button 
+        type="submit" 
+        className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+      >
         Войти
       </button>
     </form>

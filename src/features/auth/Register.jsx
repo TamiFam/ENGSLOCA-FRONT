@@ -1,22 +1,26 @@
 import { useState } from "react";
 import { registerUser } from "./authAPI";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from " "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Register() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // 🔥 ИЗМЕНИЛ: email → username
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('👤 Register attempt:', { username, password }); // 🔥 ДОБАВИЛ лог
+    
     try {
-      const res = await registerUser({ email, password });
+      const res = await registerUser({ username, password }); // 🔥 ИЗМЕНИЛ: email → username
+      console.log('✅ Register success:', res.data);
       login(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
-      alert("Ошибка регистрации");
+      console.error('❌ Register error:', err);
+      alert("Ошибка регистрации: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -25,10 +29,11 @@ export default function Register() {
       <h1 className="text-xl font-bold">Регистрация</h1>
       <input
         className="border p-2 w-full"
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        type="text"
+        placeholder="Имя пользователя" // 🔥 ИЗМЕНИЛ: Email → Имя пользователя
+        value={username} // 🔥 ИЗМЕНИЛ: email → username
+        onChange={(e) => setUsername(e.target.value)} // 🔥 ИЗМЕНИЛ: setEmail → setUsername
+        required
       />
       <input
         className="border p-2 w-full"
@@ -36,8 +41,12 @@ export default function Register() {
         placeholder="Пароль"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        required
       />
-      <button className="bg-green-500 text-white px-4 py-2 rounded">
+      <button 
+        type="submit" 
+        className="bg-green-500 text-white px-4 py-2 rounded w-full"
+      >
         Зарегистрироваться
       </button>
     </form>
