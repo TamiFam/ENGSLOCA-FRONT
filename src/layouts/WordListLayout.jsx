@@ -19,8 +19,8 @@ export default function WordListLayout() {
       <div className="fixed top-4 left-4 z-50">
         <Link 
           to="/"
-          className="relative bg-[#0f0f0f] text-[#0ff] font-semibold uppercase 
-          tracking-widest px-6 py-2 border-2 border-[#0ff] rounded-md shadow-[0_0_8px_#0ff] hover:bg-[#0ff] hover:text-black transition-all duration-300"
+          className="relative flex items-center gap-2 bg-[#111] text-[#00ffcc] border-2 
+          border-[#00ffcc] px-6 py-2 font-bold font-mono uppercase tracking-wide hover:text-black hover:bg-[#00ffcc] transition-all duration-300 shadow-[0_0_10px_#00ffcc]"
         >
           🏠 НА ГЛАВНУЮ
         </Link>
