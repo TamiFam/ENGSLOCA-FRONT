@@ -136,7 +136,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
     console.log('📱 CLICK DETECTED');
     e.preventDefault();
     e.stopPropagation();
-    handleSubmit(e);
+    setTimeout(() => {
+      handleSubmit(e);
+    }, 50);
   }}
   onTouchStart={(e) => {
     console.log('📱 TOUCH DETECTED');
@@ -147,6 +149,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
   onTouchEnd={(e) => {
     e.preventDefault();
     e.stopPropagation();
+    setTimeout(() => {
+      handleSubmit(e);
+    }, 50);
   }}
   style={{
     minHeight: '50px',

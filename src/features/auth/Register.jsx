@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { registerUser } from "./authAPI";
-import { useNavigate } from " "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Register() {
