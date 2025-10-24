@@ -6,6 +6,7 @@ export default function ParticipantsSidebar() {
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { token, user } = useAuth();
+  const API_BASE = "https://engsloca-back.onrender.com";
 
   // Мемоизируем функцию для стабильной ссылки
   const getRoleSymbol = useCallback((role) => {
@@ -41,11 +42,12 @@ export default function ParticipantsSidebar() {
     
     setLoading(true);
     try {
-      const res = await fetch('/api/users/status', {
+      const res = await fetch(`${API_BASE}/api/users/status`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
       });
       
       if (res.ok) {
