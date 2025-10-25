@@ -486,11 +486,11 @@ export default function WordList() {
                          <button
                           onClick={() => handleWordInfo(w)}
                           disabled={!canEdit(user)}
-                          className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
-                          title="Узнать больше"
+                          className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 text-white border-2 border-black hover:bg-purple-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
+                          title="Детали и заметки"
                         >
                           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9a3.001 3.001 0 115.773 1c-.33.598-.86 1.052-1.48 1.32-.62.267-1.02.855-1.02 1.52v.66m.5 4h.01" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </button>
                       </div>
@@ -506,18 +506,10 @@ export default function WordList() {
                           WEEK {w.week}
                         </span>
                       </div>
-
-                      {/* {w.examples && w.examples.length > 0 && (
-                        <div className="bg-gray-100 border-2 border-gray-300 p-3 sm:p-4">
-                          <p className="text-gray-700 text-sm sm:text-base">
-                            <span className="font-bold text-black">💬:</span> {w.examples[0]}
-                          </p>
-                        </div>
-                      )} */}
                     </div>
                     
                     {user && (
-                      <div className="flex gap-2 sm:ml-6 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300 self-end sm:self-start">
+                      <div className="flex gap-2 sm:ml-6 opacity-100 transition-opacity duration-300 self-end sm:self-start">
                         <button
                           onClick={() => handleEditClick(w)}
                           disabled={!canEdit(user)}
@@ -538,9 +530,6 @@ export default function WordList() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
-                     
-
-
                       </div>
                     )}
                   </div>

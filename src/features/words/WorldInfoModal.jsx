@@ -92,8 +92,8 @@ export default function WorldInfoModal({ isOpen, onClose, onSave, initialData })
           <div className="absolute -bottom-2 -right-2 w-3 h-3 sm:w-4 sm:h-4 bg-black"></div>
 
           {/* Заголовок */}
-          <div className="bg-black border-b-4 border-black px-4 sm:px-6 py-3 sm:py-4 relative">
-            <h2 className="text-lg sm:text-xl font-black text-white text-center pr-8 sm:pr-0">
+          <div className="bg-white border-b-4 border-black px-4 sm:px-6 py-3 sm:py-4 relative">
+            <h2 className="text-lg sm:text-xl font-black text-black text-center pr-8 sm:pr-0">
               {initialData ? `✏️ ${initialData.word}` : "НОВОЕ СЛОВО"}
             </h2>
             
