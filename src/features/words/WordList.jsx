@@ -12,18 +12,38 @@ import { useAuth } from "../../context/AuthContext";
 import WeekSelector from "../../components/WeekSelector";
 import ParticipantsSidebar from "./ParticipantsSidebar";
 
+import { useAppEvents } from "../../context/AppEventsContext";
+import Toast from "../../components/Toast"
+import WorldInfoModal from "./WorldInfoModal";
+
+
 export default function WordList() {
   const { user, logout } = useAuth();
   const [words, setWords] = useState([]);
   const [currentWeek, setCurrentWeek] = useState(1);
   const [page, setPage] = useState(1);
   const [wordModalOpen, setWordModalOpen] = useState(false);
+  const [wordInfoModal, setWordInfoModal] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [editWord, setEditWord] = useState(null);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [authError, setAuthError] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toast, setToast] = useState(null); 
+  const [selectedWord, setSelectedWord] = useState(null)
+ 
+  const { triggerParticipantsRefresh } = useAppEvents();
+  
+   // 👇 Функция для показа тостов
+   const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
+
+  const closeToast = () => {
+    setToast(null);
+  };
+
 
   useEffect(() => {
     setAuthModalHandler(() => {
@@ -32,6 +52,36 @@ export default function WordList() {
     });
   }, []);
 
+  const requireAuth = (action) => {
+    if (!user) {
+      showToast("Для выполнения действия требуется авторизация", "warning");
+      setAuthModalOpen(true);
+      return;
+    }
+    action();
+  };
+  const canEdit = (user) => {
+    return user && (user.role === 'admin' || user.role === 'member');
+  };
+  
+  const canDelete = (user) => {
+    return user && user.role === 'admin'; // Только админ может удалять
+  };
+  
+  const canAdd = (user) => {
+    return user && (user.role === 'admin' || user.role === 'member');
+  };
+  
+  const getUserRoleBadge = (user) => {
+    if (!user) return null;
+    
+    switch (user.role) {
+      case 'admin': return '👑 АДМИН';
+      case 'member': return '👤 ПОЛЬЗОВАТЕЛЬ';
+      case 'viewer': return '👀 ЗРИТЕЛЬ';
+      default: return '❓ НЕИЗВЕСТНО';
+    }
+  };
   const loadWords = async () => {
     setLoading(true);
     try {
@@ -45,13 +95,10 @@ export default function WordList() {
         setTotalPages(1);
       }
     } catch (err) {
-      if (err.isAuthError) {
-        setAuthError("Для просмотра слов требуется авторизация");
-        setAuthModalOpen(true);
-      } else {
-        setWords([]);
-        setTotalPages(1);
-      }
+      // 🔥 ИГНОРИРУЕМ ОШИБКИ АВТОРИЗАЦИИ - ПОКАЗЫВАЕМ СЛОВА ВСЕМ
+      console.log("Ошибка при загрузке слов:", err);
+      setWords([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -63,7 +110,7 @@ export default function WordList() {
 
   const handleAddClick = () => {
     if (!user) {
-      setAuthError("Для добавления слов требуется авторизация");
+      showToast("Для добавления слов требуется авторизация", "warning");
       setAuthModalOpen(true);
       return;
     }
@@ -73,52 +120,148 @@ export default function WordList() {
 
   const handleEditClick = (word) => {
     if (!user) {
-      setAuthError("Для редактирования слов требуется авторизация");
+      showToast("Для редактирования слов требуется авторизация", "warning");
       setAuthModalOpen(true);
       return;
     }
+      // 👇 Проверка прав для редактирования
+      if (!canEdit(user)) {
+        showToast("У вас нет прав для редактирования слов", "error"); // 👈
+        return;
+      }
     setEditWord(word);
     setWordModalOpen(true);
   };
 
+  const handleWordInfo = (word) => {
+    if (!user) {
+      showToast("Для редактирования слов требуется авторизация", "warning");
+      setAuthModalOpen(true);
+      return;
+    }
+      // 👇 Проверка прав для редактирования
+      if (!canEdit(user)) {
+        showToast("У вас нет прав для редактирования слов", "error"); // 👈
+        return;
+      }
+    setSelectedWord(word)
+    setWordInfoModal(true);
+  
+  }
+
   const handleDeleteClick = async (id) => {
     if (!user) {
-      setAuthError("Для удаления слов требуется авторизация");
+      showToast("Для удаления слов требуется авторизация", "warning"); // 👈
       setAuthModalOpen(true);
       return;
     }
 
-    if (window.confirm("Удалить слово?")) {
-      try {
-        await deleteWord(id);
-        loadWords();
-      } catch (err) {
-        if (err.isAuthError) {
-          setAuthError("Для удаления слов требуется авторизация");
-          setAuthModalOpen(true);
-        }
-      }
+    // 👇 Проверка прав для удаления
+    if (!canDelete(user)) {
+      showToast("Только администратор может удалять слова", "error"); // 👈
+      return;
     }
+
+    // 👇 Красивое подтверждение удаления вместо стандартного confirm
+    showToast(
+      <div className="flex flex-col gap-2">
+        <p className="font-black">Удалить слово?</p>
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={async () => {
+              closeToast();
+              try {
+                await deleteWord(id);
+                loadWords();
+                triggerParticipantsRefresh();
+                showToast("Слово успешно удалено", "success"); // 👈
+              } catch (err) {
+                if (err.isAuthError) {
+                  setAuthError("Для удаления слов требуется авторизация");
+                  setAuthModalOpen(true);
+                }
+              }
+            }}
+            className="bg-red-500 text-white px-3 py-1 border-2 border-black text-sm font-bold hover:bg-red-600"
+          >
+            УДАЛИТЬ
+          </button>
+          <button
+            onClick={closeToast}
+            className="bg-gray-500 text-white px-3 py-1 border-2 border-black text-sm font-bold hover:bg-gray-600"
+          >
+            ОТМЕНА
+          </button>
+        </div>
+      </div>,
+      'error'
+    );
   };
+
 
   const handleSave = async (data) => {
     try {
-      const wordData = editWord 
-        ? data 
-        : { ...data, week: currentWeek };
+      let wordData;
+      let isEditingWord = false;
       
-      const action = editWord
-        ? updateWord(editWord._id, wordData)
+      if (editWord) {
+        // 📝 Редактирование основного слова (из WordModal)
+        wordData = { ...data, week: currentWeek };
+        isEditingWord = true;
+      } else if (selectedWord) {
+        // 💬 Добавление примеров/заметок к существующему слову (из WorldInfoModal)
+        wordData = {
+          ...selectedWord, // берем все данные слова
+          examples: data.examples, // обновляем examples
+          notes: data.notes // обновляем notes
+        };
+        isEditingWord = true;
+      } else {
+        // ➕ Создание нового слова
+        wordData = { ...data, week: currentWeek };
+      }
+      
+      // Выбираем действие: обновление или создание
+      const action = isEditingWord
+        ? updateWord((editWord || selectedWord)._id, wordData)
         : createWord(wordData);
       
       await action;
-      setWordModalOpen(false);
-      loadWords();
-    } catch (err) {
-      if (err.isAuthError) {
-        setAuthError("Для сохранения слов требуется авторизация");
-        setAuthModalOpen(true);
+      
+      // Закрываем правильную модалку и сбрасываем состояния
+      if (editWord) {
         setWordModalOpen(false);
+        setEditWord(null);
+      } 
+      if (selectedWord) {
+        setWordInfoModal(false);
+        setSelectedWord(null);
+      }
+      if (!editWord && !selectedWord) {
+        setWordModalOpen(false);
+      }
+      
+      // Обновляем данные
+      loadWords();
+      triggerParticipantsRefresh();
+      
+      // Показываем соответствующее уведомление
+      if (editWord || selectedWord) {
+        showToast("Данные слова обновлены!", "success");
+      } else {
+        showToast("Слово добавлено!", "success");
+      }
+      
+    } catch (err) {
+      console.error("Ошибка сохранения:", err);
+      if (err.isAuthError) {
+        showToast("Для сохранения требуется авторизация", "warning");
+        setAuthModalOpen(true);
+        // Закрываем все модалки при ошибке авторизации
+        setWordModalOpen(false);
+        setWordInfoModal(false);
+      } else {
+        showToast("Ошибка при сохранении", "error");
       }
     }
   };
@@ -126,6 +269,7 @@ export default function WordList() {
   const handleAuthSuccess = () => {
     setAuthModalOpen(false);
     setAuthError(null);
+    showToast("Авторизация успешна!", "success"); // 👈
     setTimeout(() => {
       loadWords();
     }, 500);
@@ -133,6 +277,15 @@ export default function WordList() {
 
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
+    {/* Toast уведомление */}
+    {toast && (
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={closeToast}
+      />  
+    )}
+    
       {/* Абстрактные геометрические фигуры - скрыты на мобильных */}
       <div className="fixed inset-0 pointer-events-none hidden md:block">
         <div className="absolute top-10 left-5 w-40 h-40 bg-red-100 rotate-45 -translate-x-20"></div>
@@ -177,7 +330,7 @@ export default function WordList() {
               </div>
             ) : (
               <div className="bg-yellow-200 border-2 border-black px-4 py-3 text-base font-bold text-center mb-8">
-                🔒 Требуется авторизация
+                 🔒 Требуется авторизация
               </div>
             )}
             
@@ -235,7 +388,10 @@ export default function WordList() {
               </div>
             ) : (
               <div className="bg-yellow-200 border-2 border-black px-4 py-2 text-sm font-bold inline-block mt-4">
+                <button onClick={() => setAuthModalOpen(true)}>
                 🔒 Требуется авторизация
+                </button>
+                
               </div>
             )}
           </div>
@@ -263,10 +419,18 @@ export default function WordList() {
                 📚 {words.length} {words.length === 1 ? 'слово' : words.length < 5 ? 'слова' : 'слов'}
               </p>
             </div>
+
             <button
-              className="bg-black text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 font-bold text-base sm:text-lg border-4 border-black hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-              onClick={handleAddClick}
-              disabled={loading}
+              className={`bg-black text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 font-bold text-base sm:text-lg border-4 border-black
+               hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-50 
+               disabled:cursor-not-allowed w-full sm:w-auto  ${
+                canAdd(user)
+                ? 'bg-black text-white border-black hover:bg-white hover:text-black' 
+                : 'bg-gray-400 text-gray-200 border-gray-400 cursor-not-allowed'
+               }`}
+              
+              onClick={() => requireAuth(() => handleAddClick())}
+              disabled={!canAdd(user) || loading}
             >
               <span className="text-lg sm:text-xl">⚡</span>
               <span className="text-sm sm:text-base">ДОБАВИТЬ СЛОВО</span>
@@ -317,6 +481,18 @@ export default function WordList() {
                         <span className="text-sm sm:text-lg text-gray-600 font-mono bg-gray-100 px-2 py-1 self-start">[{w.transcriptionUK}]</span>
                         <span className="hidden sm:inline text-2xl text-gray-400">—</span>
                         <span className="text-xl sm:text-2xl font-bold text-gray-800 break-words">{w.translation}</span>
+
+                         {/* кнопка доп инфы */}
+                         <button
+                          onClick={() => handleWordInfo(w)}
+                          disabled={!canEdit(user)}
+                          className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
+                          title="Узнать больше"
+                        >
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9a3.001 3.001 0 115.773 1c-.33.598-.86 1.052-1.48 1.32-.62.267-1.02.855-1.02 1.52v.66m.5 4h.01" />
+                          </svg>
+                        </button>
                       </div>
                       
                       <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6">
@@ -331,19 +507,20 @@ export default function WordList() {
                         </span>
                       </div>
 
-                      {w.examples && w.examples.length > 0 && (
+                      {/* {w.examples && w.examples.length > 0 && (
                         <div className="bg-gray-100 border-2 border-gray-300 p-3 sm:p-4">
                           <p className="text-gray-700 text-sm sm:text-base">
                             <span className="font-bold text-black">💬:</span> {w.examples[0]}
                           </p>
                         </div>
-                      )}
+                      )} */}
                     </div>
                     
                     {user && (
                       <div className="flex gap-2 sm:ml-6 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300 self-end sm:self-start">
                         <button
                           onClick={() => handleEditClick(w)}
+                          disabled={!canEdit(user)}
                           className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
                           title="Редактировать"
                         >
@@ -353,6 +530,7 @@ export default function WordList() {
                         </button>
                         <button
                           onClick={() => handleDeleteClick(w._id)}
+                          disabled={!canDelete(user)}
                           className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 text-white border-2 border-black hover:bg-red-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
                           title="Удалить"
                         >
@@ -360,6 +538,9 @@ export default function WordList() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
+                     
+
+
                       </div>
                     )}
                   </div>
@@ -390,6 +571,17 @@ export default function WordList() {
             )}
           </>
         )}
+
+        <WorldInfoModal
+        isOpen={wordInfoModal}
+        onClose={() =>  {
+          setWordInfoModal(false)
+          setSelectedWord(null)
+        }
+        }
+        onSave={handleSave}
+          initialData={selectedWord}
+        />
 
         <WordModal
           isOpen={wordModalOpen}
