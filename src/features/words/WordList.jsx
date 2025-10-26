@@ -297,7 +297,8 @@ export default function WordList() {
       <div className="fixed top-0 right-0 w-1 h-full bg-black"></div>
 
       {/* Мобильное меню */}
-      <div className="fixed top-4 right-4 z-50 md:hidden">
+      {wordModalOpen === true ? (null):(
+        <div className="fixed top-4 right-4 z-50 md:hidden">
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="bg-gray-100 text-gray-800 w-12 h-12 flex items-center justify-center rounded-2xl shadow-sm hover:shadow-md 
@@ -306,6 +307,8 @@ export default function WordList() {
           {mobileMenuOpen ? "✕" : "☰"}
         </button>
       </div>
+      )}
+      
 
       {/* Мобильное меню контент */}
       {mobileMenuOpen && (
