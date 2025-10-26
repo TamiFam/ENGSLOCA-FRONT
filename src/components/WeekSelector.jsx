@@ -74,18 +74,18 @@ export default function WeekSelector({ currentWeek, onWeekChange }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center justify-between sm:justify-start gap-3">
             <span className="text-base sm:text-lg font-black text-black whitespace-nowrap">
-              НЕДЕЛЯ:
+            📅 НЕДЕЛЯ:
             </span>
             
             <div className="relative flex-1 sm:flex-none">
               <select 
                 value={currentWeek} 
                 onChange={(e) => onWeekChange(parseInt(e.target.value))}
-                className="appearance-none bg-white border-2 border-black px-3 sm:px-4 py-2 pr-8 font-black text-black focus:outline-none focus:bg-yellow-100 cursor-pointer w-full sm:w-32 text-sm sm:text-base"
+                className="appearance-none bg-white border-2 border-black px-3 sm:px-4 py-2 pr-8 font-black text-black focus:outline-none focus:bg-yellow-100 cursor-pointer w-full sm:w-18 text-sm sm:text-base"
               >
                 {weeks.map(week => (
                   <option key={week} value={week}>
-                    WEEK {week}
+                    {week}
                   </option>
                 ))}
               </select>

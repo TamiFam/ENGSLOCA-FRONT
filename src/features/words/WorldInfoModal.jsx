@@ -1,11 +1,26 @@
 import { useState, useEffect } from "react";
 import Portal from "../../components/Portal";
+import { useAuth } from "../../context/AuthContext";
+import Toast from "../../components/Toast";
 
 export default function WorldInfoModal({ isOpen, onClose, onSave, initialData }) {
+  const Max_letters = 94
+  const Max_example = 3
+  const [toast, setToast] = useState(null);
+  const {user} = useAuth()
+
   const [form, setForm] = useState({
     examples: [""],
     notes: ""
   });
+
+  // 👇 Функция для показа тостов
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+  };
+  const closeToast = () => {
+    setToast(null);
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -23,33 +38,48 @@ export default function WorldInfoModal({ isOpen, onClose, onSave, initialData })
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if( value.length > Max_letters) return
+    if(user.role ==='viewer') return
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+
+  
   const addExample = () => {
-    setForm(prev => ({
-      ...prev,
-      examples: [...prev.examples, ""]
-    }));
-  };
+    if(form.examples.length < Max_example) {
+      if(user.role ==='viewer') return
+      setForm(prev => ({
+        ...prev,
+        examples: [...prev.examples, ""]
+      }));
+    };
+    }
+    
 
   const removeExample = (index) => {
+    if(user.role ==='viewer') return
     setForm(prev => ({
       ...prev,
       examples: prev.examples.filter((_, i) => i !== index)
     }));
   };
-
+  
   const handleExampleChange = (index, value) => {
-    setForm(prev => ({
-      ...prev,
-      examples: prev.examples.map((ex, i) => i === index ? value : ex)
-    }));
-  };
+    if(value.length < Max_letters) {
+      setForm(prev => ({
+        ...prev,
+        examples: prev.examples.map((ex, i) => i === index ? value : ex)
+      }));
+    };
+    }
+   
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+    if(user.role ==='viewer') {
+      return showToast('У вас нет прав')
+    }
     const cleanedData = {
       ...form,
       examples: form.examples.filter(ex => ex.trim() !== ""),
@@ -79,7 +109,9 @@ export default function WorldInfoModal({ isOpen, onClose, onSave, initialData })
   if (!isOpen) return null;
 
   return (
+    
     <Portal>
+       
       <div 
         className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-2 sm:p-4"
         onClick={handleOverlayClick}
