@@ -15,6 +15,8 @@ import ParticipantsSidebar from "./ParticipantsSidebar";
 import { useAppEvents } from "../../context/AppEventsContext";
 import Toast from "../../components/Toast";
 import WorldInfoModal from "./WorldInfoModal";
+import AddWeeker from "./AddWeeker";
+import WordsLurk from "./WordsLurk";
 
 export default function WordList() {
   const { user, logout } = useAuth();
@@ -33,6 +35,7 @@ export default function WordList() {
   const [selectedWord, setSelectedWord] = useState(null);
 
   const { triggerParticipantsRefresh } = useAppEvents();
+  const [allWordsHidden, setAllWordsHidden] = useState(false);
 
   // 👇 Функция для показа тостов
   const showToast = (message, type = "info") => {
@@ -50,14 +53,6 @@ export default function WordList() {
     });
   }, []);
 
-  const requireAuth = (action) => {
-    if (!user) {
-      showToast("Для выполнения действия требуется авторизация", "warning");
-      setAuthModalOpen(true);
-      return;
-    }
-    action();
-  };
   const canEdit = (user) => {
     return user && (user.role === "admin" || user.role === "member");
   };
@@ -70,20 +65,6 @@ export default function WordList() {
     return user && (user.role === "admin" || user.role === "member");
   };
 
-  const getUserRoleBadge = (user) => {
-    if (!user) return null;
-
-    switch (user.role) {
-      case "admin":
-        return "👑 АДМИН";
-      case "member":
-        return "👤 ПОЛЬЗОВАТЕЛЬ";
-      case "viewer":
-        return "👀 ЗРИТЕЛЬ";
-      default:
-        return "❓ НЕИЗВЕСТНО";
-    }
-  };
   const loadWords = async () => {
     setLoading(true);
     try {
@@ -110,16 +91,6 @@ export default function WordList() {
     loadWords();
   }, [page, currentWeek]);
 
-  const handleAddClick = () => {
-    if (!user) {
-      showToast("Для добавления слов требуется авторизация", "warning");
-      setAuthModalOpen(true);
-      return;
-    }
-    setEditWord(null);
-    setWordModalOpen(true);
-  };
-
   const handleEditClick = (word) => {
     if (!user) {
       showToast("Для редактирования слов требуется авторизация", "warning");
@@ -141,11 +112,7 @@ export default function WordList() {
       setAuthModalOpen(true);
       return;
     }
-    // 👇 Проверка прав для редактирования
-    // if (!canEdit(user)) {
-    //   showToast("У вас нет прав для редактирования слов", "error"); // 👈
-    //   return;
-    // }
+
     setSelectedWord(word);
     setWordInfoModal(true);
   };
@@ -201,32 +168,47 @@ export default function WordList() {
 
   const handleSave = async (data) => {
     try {
+      console.log("📝 handleSave вызван с данными:", data);
+
       let wordData;
+      let wordId;
       let isEditingWord = false;
 
       if (editWord) {
         // 📝 Редактирование основного слова (из WordModal)
+        console.log("✏️ Режим редактирования слова:", editWord);
         wordData = { ...data, week: currentWeek };
+        wordId = editWord._id;
         isEditingWord = true;
       } else if (selectedWord) {
         // 💬 Добавление примеров/заметок к существующему слову (из WorldInfoModal)
+        console.log("💬 Режим обновления информации слова:", selectedWord);
         wordData = {
           ...selectedWord, // берем все данные слова
           examples: data.examples, // обновляем examples
           notes: data.notes, // обновляем notes
         };
+        wordId = selectedWord._id;
         isEditingWord = true;
       } else {
         // ➕ Создание нового слова
+        console.log("➕ Режим создания нового слова");
         wordData = { ...data, week: currentWeek };
       }
 
-      // Выбираем действие: обновление или создание
-      const action = isEditingWord
-        ? updateWord((editWord || selectedWord)._id, wordData)
-        : createWord(wordData);
+      console.log("📤 Отправляемые данные:", wordData);
 
-      await action;
+      // Выбираем действие: обновление или создание
+      let result;
+      if (isEditingWord) {
+        console.log("🔄 Обновление слова с ID:", wordId);
+        result = await updateWord(wordId, wordData);
+      } else {
+        console.log("🆕 Создание нового слова");
+        result = await createWord(wordData);
+      }
+
+      console.log("✅ Успешный ответ от сервера:", result);
 
       // Закрываем правильную модалку и сбрасываем состояния
       if (editWord) {
@@ -242,17 +224,24 @@ export default function WordList() {
       }
 
       // Обновляем данные
-      loadWords();
+      await loadWords();
       triggerParticipantsRefresh();
 
       // Показываем соответствующее уведомление
-      if (editWord || selectedWord) {
+      if (isEditingWord) {
         showToast("Данные слова обновлены!", "success");
       } else {
         showToast("Слово добавлено!", "success");
       }
     } catch (err) {
-      console.error("Ошибка сохранения:", err);
+      console.error("❌ Ошибка сохранения:", err);
+      console.error("❌ Детали ошибки:", {
+        message: err.message,
+        status: err.status,
+        data: err.data,
+        isAuthError: err.isAuthError,
+      });
+
       if (err.isAuthError) {
         showToast("Для сохранения требуется авторизация", "warning");
         setAuthModalOpen(true);
@@ -260,7 +249,15 @@ export default function WordList() {
         setWordModalOpen(false);
         setWordInfoModal(false);
       } else {
-        showToast("Ошибка при сохранении", "error");
+        // Показываем более детальное сообщение об ошибке
+        const errorMessage = err.message || "Ошибка при сохранении";
+        showToast(
+          <div>
+            <div className="font-bold">Ошибка сохранения</div>
+            <div className="text-sm">{errorMessage}</div>
+          </div>,
+          "error"
+        );
       }
     }
   };
@@ -297,18 +294,17 @@ export default function WordList() {
       <div className="fixed top-0 right-0 w-1 h-full bg-black"></div>
 
       {/* Мобильное меню */}
-      {wordModalOpen === true ? (null):(
+      {wordModalOpen === true ? null : (
         <div className="fixed top-4 right-4 z-50 md:hidden">
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="bg-gray-100 text-gray-800 w-12 h-12 flex items-center justify-center rounded-2xl shadow-sm hover:shadow-md 
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="bg-gray-100 text-gray-800 w-12 h-12 flex items-center justify-center rounded-2xl shadow-sm hover:shadow-md 
           transition-all duration-300 border border-gray-200 hover:bg-gray-200"
-        >
-          {mobileMenuOpen ? "✕" : "☰"}
-        </button>
-      </div>
+          >
+            {mobileMenuOpen ? "✕" : "☰"}
+          </button>
+        </div>
       )}
-      
 
       {/* Мобильное меню контент */}
       {mobileMenuOpen && (
@@ -402,42 +398,18 @@ export default function WordList() {
           />
         </div>
 
-        {/* Статистика с адаптивным дизайном */}
-        <div className="bg-white border-4 border-black p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 relative">
-          <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-4 h-4 sm:w-6 sm:h-6 bg-black"></div>
-          <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-4 h-4 sm:w-6 sm:h-6 bg-black"></div>
-
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <div className="text-center sm:text-left">
-              <h2 className="text-2xl sm:text-3xl font-black text-black mb-2">
-                WEEK {currentWeek}
-              </h2>
-              <p className="text-gray-600 font-bold text-sm sm:text-base">
-                📚 {words.length}{" "}
-                {words.length === 1
-                  ? "слово"
-                  : words.length < 5
-                  ? "слова"
-                  : "слов"}
-              </p>
-            </div>
-
-            <button
-              className={`bg-black text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 font-bold text-base sm:text-lg border-4 border-black
-               hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-50 
-               disabled:cursor-not-allowed w-full sm:w-auto  ${
-                 canAdd(user)
-                   ? "bg-black text-white border-black hover:bg-white hover:text-black"
-                   : "bg-gray-400 text-gray-200 border-gray-400 cursor-not-allowed"
-               }`}
-              onClick={() => requireAuth(() => handleAddClick())}
-              disabled={!canAdd(user) || loading}
-            >
-              <span className="text-lg sm:text-xl">⚡</span>
-              <span className="text-sm sm:text-base">ДОБАВИТЬ СЛОВО</span>
-            </button>
-          </div>
-        </div>
+        {/* ВТОРАЯ СЕКЦИЯ С "ДОБАВИТЬ СЛОВО"*/}
+        <AddWeeker
+          currentWeek={currentWeek}
+          words={words}
+          showToast={showToast}
+          setAuthModalOpen={setAuthModalOpen}
+          setWordModalOpen={setWordModalOpen}
+          setEditWord={setEditWord}
+          loading={loading}
+          allWordsHidden={allWordsHidden}
+          setAllWordsHidden={setAllWordsHidden}
+        />
 
         {/* Список слов с адаптивным дизайном */}
         {loading ? (
@@ -483,41 +455,62 @@ export default function WordList() {
 
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6">
-                        <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-black break-words">
-                          {w.word}
-                        </span>
-                        <span className="text-sm sm:text-lg text-gray-600 font-mono bg-gray-100 px-2 py-1 self-start">
-                          [{w.transcriptionUK}]
-                        </span>
-                        <span className="hidden sm:inline text-2xl text-gray-400">
-                          —
-                        </span>
-                        <span className="text-xl sm:text-2xl font-bold text-gray-800 break-words">
-                          {w.translation}
-                        </span>
+                      <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6 ">
+                        <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-2xl sm:text-3xl lg:text-3xl font-black wrap-break-word transition-all duration-500 ${
+                                allWordsHidden
+                                  ? "filter blur-[5px] opacity-70 backdrop-blur-sm bg-white/20 rounded-lg px-2"
+                                  : "filter blur-0 text-black"
+                              }`}
+                            >
+                              {w.word}
+                            </span>
 
-                        {/* кнопка доп инфы */}
-                        <button
-                          onClick={() => handleWordInfo(w)}
-                          // disabled={!canEdit(user)}
-                          className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 text-white border-2 border-black hover:bg-purple-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
-                          title="Детали и заметки"
-                        >
-                          <svg
-                            className="w-4 h-4 sm:w-5 sm:h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                            {/* кнопка доп инфы  */}
+                            <button
+                              onClick={() => handleWordInfo(w)}
+                              className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-500 text-white border-2 border-black 
+                 hover:bg-purple-600 transition-colors duration-200 flex items-center 
+                 justify-center shrink-0"
+                              title="Детали и заметки"
+                            >
+                              <svg
+                                className="w-4 h-4 sm:w-5 sm:h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 3a2 2 0 00-2 2v3a2 2 0 01-2 2H4a2 2 0 100 4h1a2 2 0 012 2v3a2 2 0 002 2m6-18a2 2 0 012 2v3a2 2 0 002 2h1a2 2 0 110 4h-1a2 2 0 00-2 2v3a2 2 0 01-2 2"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+
+                          <span
+                            className={`text-sm sm:text-lg text-gray-600 font-mono bg-gray-100 px-2 py-1 self-start
+                          ${
+                            allWordsHidden
+                              ? "filter blur-[5px] text-gray-400"
+                              : "filter blur-0 text-black"
+                          }`}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                        </button>
+                            [{w.transcriptionUK}]
+                          </span>
+
+                          <span className="hidden sm:inline text-2xl text-gray-400">
+                            —
+                          </span>
+
+                          <span className="text-xl sm:text-2xl font-bold text-gray-800 wrap-break-words">
+                            {w.translation}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6">
@@ -534,15 +527,15 @@ export default function WordList() {
                     </div>
 
                     {user && (
-                      <div className="flex gap-2 sm:ml-6 opacity-100 transition-opacity duration-300 self-end sm:self-start">
+                      <div className="flex gap-2   sm:ml-6 opacity-100 transition-opacity duration-300 self-end sm:self-start ">
                         <button
                           onClick={() => handleEditClick(w)}
                           disabled={!canEdit(user)}
-                          className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
+                          className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center shrink-0"
                           title="Редактировать"
                         >
                           <svg
-                            className="w-4 h-4 sm:w-5 sm:h-5"
+                            className=" w-4 h-4 sm:w-5 sm:h-5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -558,7 +551,7 @@ export default function WordList() {
                         <button
                           onClick={() => handleDeleteClick(w._id)}
                           disabled={!canDelete(user)}
-                          className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 text-white border-2 border-black hover:bg-red-600 transition-colors duration-200 flex items-center justify-center flex-shrink-0"
+                          className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 text-white border-2 border-black hover:bg-red-600 transition-colors duration-200 flex items-center justify-center shrink-0"
                           title="Удалить"
                         >
                           <svg
@@ -582,7 +575,9 @@ export default function WordList() {
                     {(Date.now() - new Date(w.createdAt)) /
                       (1000 * 60 * 60 * 24) <
                     1 ? (
-                      <span className=" inline-block  w-fit mb-1 md:mb-0 md:ml-auto rounded-full bg-red-100 px-2 py-0.5 text-xs sm:text-sm font-semibold text-red-600">NEW</span>
+                      <span className=" inline-block  w-fit mb-1 md:mb-0 md:ml-auto rounded-full bg-red-100 px-2 py-0.5 text-xs sm:text-sm font-semibold text-red-600">
+                        NEW
+                      </span>
                     ) : null}
                   </div>
                 </div>
@@ -613,6 +608,9 @@ export default function WordList() {
           </>
         )}
 
+        {/* <WordsLurk
+                
+                /> */}
         <WorldInfoModal
           isOpen={wordInfoModal}
           onClose={() => {

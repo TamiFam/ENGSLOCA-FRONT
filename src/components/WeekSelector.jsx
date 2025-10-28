@@ -73,6 +73,7 @@ export default function WeekSelector({ currentWeek, onWeekChange }) {
         {/* Верхняя строка - выбор недели и статистика */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center justify-between sm:justify-start gap-3">
+            
             <span className="text-base sm:text-lg font-black text-black whitespace-nowrap">
             📅 НЕДЕЛЯ:
             </span>
@@ -89,6 +90,7 @@ export default function WeekSelector({ currentWeek, onWeekChange }) {
                   </option>
                 ))}
               </select>
+              
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-black">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -103,6 +105,7 @@ export default function WeekSelector({ currentWeek, onWeekChange }) {
               </span>
             </div>
           </div>
+  
 
           {/* Десктопная статистика */}
           <div className="hidden sm:block">

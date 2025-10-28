@@ -1,14 +1,30 @@
 import { useState, useEffect } from "react";
 
 export default function WordModal({ isOpen, onClose, onSave, initialData }) {
+  const [isClosing, setIsClosing] = useState(false);
   const [form, setForm] = useState({
     word: "",
     translation: "",
     partOfSpeech: "noun",
-    category: "basic",
+    category: "basic", // 
     transcriptionUK: "",
     transcriptionUS: "",
   });
+
+  const partsOfSpeech = [
+    { value: "noun", label: "📚 Сущ", title: "Существительное" },
+    { value: "verb", label: "⚡ Гл", title: "Глагол" },
+    { value: "adjective", label: "🎨 Прил", title: "Прилагательное" },
+    { value: "adverb", label: "📊 Нар", title: "Наречие" },
+  ];
+
+  // const categories = [
+  //   { value: "basic", label: "📖 Базовая лексика" },
+  //   { value: "advanced", label: "🚀 Продвинутая" },
+  //   { value: "business", label: "💼 Бизнес" },
+  //   { value: "technical", label: "🔧 Техническая" },
+  //   { value: "slang", label: "💬 Сленг" },
+  // ];
 
   useEffect(() => {
     if (initialData) {
@@ -16,212 +32,202 @@ export default function WordModal({ isOpen, onClose, onSave, initialData }) {
         word: initialData.word || "",
         translation: initialData.translation || "",
         partOfSpeech: initialData.partOfSpeech || "noun",
-        category: initialData.category || "basic",
+        category: initialData.category || "basic", // 👈 ДОБАВЬ
         transcriptionUK: initialData.transcriptionUK || "",
         transcriptionUS: initialData.transcriptionUS || "",
       });
     } else {
+      // Сброс формы для нового слова
       setForm({
         word: "",
         translation: "",
         partOfSpeech: "noun",
-        category: "basic",
+        category: "basic", // 👈 ДОБАВЬ
         transcriptionUK: "",
         transcriptionUS: "",
       });
     }
   }, [initialData, isOpen]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 200);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     const cleanedData = {
       word: form.word.trim(),
       translation: form.translation.trim(),
-      partOfSpeech: form.partOfSpeech || "noun",
-      category: form.category || "basic",
+      partOfSpeech: form.partOfSpeech,
+      category: form.category, // 👈 ДОБАВЬ
       transcriptionUK: form.transcriptionUK.trim() || undefined,
       transcriptionUS: form.transcriptionUS.trim() || undefined,
     };
-    
+    console.log('📤 Отправляемые данные:', cleanedData); // 👈 Для отладки
     onSave(cleanedData);
   };
 
-  // Закрытие по клику на оверлей
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  // Закрытие по Escape
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-2 sm:p-4"
-      onClick={handleOverlayClick}
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-200 ${
+        isClosing ? 'opacity-0' : 'opacity-100'
+      }`}
+      onClick={handleClose}
     >
-      <div className="bg-white border-4 border-black w-full max-w-lg max-h-[90vh] overflow-y-auto relative mx-2 sm:mx-4">
-        {/* Декоративные угловые элементы */}
-        <div className="absolute -top-2 -left-2 w-3 h-3 sm:w-4 sm:h-4 bg-black"></div>
-        <div className="absolute -top-2 -right-2 w-3 h-3 sm:w-4 sm:h-4 bg-black"></div>
-        <div className="absolute -bottom-2 -left-2 w-3 h-3 sm:w-4 sm:h-4 bg-black"></div>
-        <div className="absolute -bottom-2 -right-2 w-3 h-3 sm:w-4 sm:h-4 bg-black"></div>
-
-        {/* Заголовок с кнопкой закрытия */}
-        <div className="bg-black border-b-4 border-black px-4 sm:px-6 py-3 sm:py-4 relative">
-          <h2 className="text-lg sm:text-xl font-black text-white text-center pr-8 sm:pr-0">
-            {initialData ? "РЕДАКТИРОВАТЬ СЛОВО" : "НОВОЕ СЛОВО"}
+      <div 
+        className={`bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-200 ${
+          isClosing ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">
+            {initialData ? "✏️ Редактировать" : "✨ Новое слово"}
           </h2>
-          
-          {/* Кнопка закрытия для мобильных */}
           <button
-            onClick={onClose}
-            className="absolute right-3 top-10 transform -translate-y-1/2 sm:hidden w-8 h-8 bg-white text-black border-2 border-black flex items-center justify-center font-black"
+            onClick={handleClose}
+            className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors"
           >
-            ✕
+            ×
           </button>
         </div>
 
-        {/* Форма */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Обязательные поля */}
-          <div className="space-y-3">
-            <label className="block text-sm font-black text-black">
-              СЛОВО *
-            </label>
-            <input
-              name="word"
-              value={form.word}
-              onChange={handleChange}
-              className="w-full px-3 py-3 sm:py-2 border-2 border-black text-black font-bold bg-white focus:outline-none focus:bg-yellow-100 text-base sm:text-sm"
-              required
-              autoFocus
-              placeholder="Введите слово на английском"
-            />
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {/* Main Word Row */}
+          <div className="flex gap-3">
+            {/* Word Input */}
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Слово</label>
+              <input
+                value={form.word}
+                onChange={(e) => setForm(prev => ({ ...prev, word: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+                placeholder="word"
+                autoFocus
+                required
+              />
+            </div>
+
+            {/* Translation Input */}
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Перевод</label>
+              <input
+                value={form.translation}
+                onChange={(e) => setForm(prev => ({ ...prev, translation: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500"
+                placeholder="translate"
+                required
+              />
+            </div>
           </div>
 
-          <div className="space-y-3">
-            <label className="block text-sm font-black text-black">
-              ПЕРЕВОД *
-            </label>
-            <input
-              name="translation"
-              value={form.translation}
-              onChange={handleChange}
-              className="w-full px-3 py-3 sm:py-2 border-2 border-black text-black font-bold bg-white focus:outline-none focus:bg-yellow-100 text-base sm:text-sm"
-              required
-              placeholder="Введите перевод на русский"
-            />
-          </div>
-
-          {/* Часть речи с селектом */}
-          <div className="space-y-3">
-            <label className="block text-sm font-black text-black">
-              ЧАСТЬ РЕЧИ
-            </label>
-            <select
-              name="partOfSpeech"
-              value={form.partOfSpeech}
-              onChange={handleChange}
-              className="w-full px-3 py-3 sm:py-2 border-2 border-black text-black font-bold bg-white focus:outline-none focus:bg-yellow-100 text-base sm:text-sm appearance-none"
-            >
-              <option value="noun">СУЩЕСТВИТЕЛЬНОЕ</option>
-              <option value="verb">ГЛАГОЛ</option>
-              <option value="adjective">ПРИЛАГАТЕЛЬНОЕ</option>
-              <option value="adverb">НАРЕЧИЕ</option>
-              <option value="preposition">ПРЕДЛОГ</option>
-              <option value="conjunction">СОЮЗ</option>
-              <option value="interjection">МЕЖДОМЕТИЕ</option>
-            </select>
-          </div>
-
-          {/* Категория */}
-          <div className="space-y-3">
-            <label className="block text-sm font-black text-black">
-              КАТЕГОРИЯ
-            </label>
-            <input
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              className="w-full px-3 py-3 sm:py-2 border-2 border-black text-black font-bold bg-white focus:outline-none focus:bg-yellow-100 text-base sm:text-sm"
-              placeholder="basic, advanced, business..."
-            />
-          </div>
-
-          {/* Транскрипции - вертикально на мобильных */}
-          <div className="space-y-4 sm:space-y-3">
-            <label className="block text-sm font-black text-black">
-              ТРАНСКРИПЦИИ
-            </label>
-            
-            <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-3">
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-600">
-                  БРИТАНСКАЯ (UK)
-                </label>
-                <input
-                  name="transcriptionUK"
-                  value={form.transcriptionUK}
-                  onChange={handleChange}
-                  className="w-full px-3 py-3 sm:py-2 border-2 border-black text-black font-bold bg-white focus:outline-none focus:bg-yellow-100 text-base sm:text-sm"
-                  placeholder="/trænˈskrɪp.ʃən/"
-                />
+          {/* Part of Speech & Category */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Part of Speech */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Часть речи</label>
+              <div className="flex flex-col gap-1">
+                {partsOfSpeech.map((pos) => (
+                  <button
+                    key={pos.value}
+                    type="button"
+                    onClick={() => setForm(prev => ({ ...prev, partOfSpeech: pos.value }))}
+                    className={`py-2 px-1 rounded-lg text-sm font-medium transition-all ${
+                      form.partOfSpeech === pos.value
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={pos.title}
+                  >
+                    {pos.label}
+                  </button>
+                ))}
               </div>
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-600">
-                  АМЕРИКАНСКАЯ (US)
-                </label>
-                <input
-                  name="transcriptionUS"
-                  value={form.transcriptionUS}
-                  onChange={handleChange}
-                  className="w-full px-3 py-3 sm:py-2 border-2 border-black text-black font-bold bg-white focus:outline-none focus:bg-yellow-100 text-base sm:text-sm"
-                  placeholder="/trænˈskrɪp.ʃən/"
-                />
+            </div>
+
+            {/* Category */}
+            {/* <div>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Категория</label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm(prev => ({ ...prev, category: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+              >
+                {categories.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div> */}
+          </div>
+
+          {/* Transcriptions */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">🇬🇧 UK</label>
+              <input
+                value={form.transcriptionUK}
+                onChange={(e) => setForm(prev => ({ ...prev, transcriptionUK: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                placeholder="/транскрипция/"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">🇺🇸 US</label>
+              <input
+                value={form.transcriptionUS}
+                onChange={(e) => setForm(prev => ({ ...prev, transcriptionUS: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                placeholder="/транскрипция/"
+              />
+            </div>
+          </div>
+
+          {/* Live Preview */}
+          <div className="bg-gray-50 rounded-lg p-3 border">
+            <div className="text-xs text-gray-500 mb-2">Предпросмотр:</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-bold text-gray-900">{form.word || "слово"}</div>
+                <div className="text-sm text-gray-600">{form.translation || "перевод"}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-gray-500 font-mono">
+                  {form.transcriptionUK || form.transcriptionUS || "/.../"}
+                </div>
+                <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                  {partsOfSpeech.find(p => p.value === form.partOfSpeech)?.title || "Часть речи"}
+                </div>
+                {/* <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full mt-1">
+                  {categories.find(c => c.value === form.category)?.label.split(' ')[1] || "Категория"}
+                </div> */}
               </div>
             </div>
           </div>
 
-          {/* Подсказка про обязательные поля */}
-          <div className="bg-gray-100 border-2 border-gray-300 p-3">
-            <p className="text-xs text-gray-600 text-center">
-              * Поля обязательные для заполнения
-            </p>
-          </div>
-
-          {/* Кнопки - вертикально на мобильных */}
-          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t-2 border-black">
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
-              className="px-4 sm:px-6 py-3 sm:py-2 bg-white text-black border-2 border-black font-black hover:bg-black hover:text-white transition-all duration-200 text-base sm:text-sm order-2 sm:order-1"
+              onClick={handleClose}
+              className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
             >
-              ОТМЕНА
+              Отмена
             </button>
             <button
               type="submit"
-              className="px-4 sm:px-6 py-3 sm:py-2 bg-black text-white border-2 border-black font-black hover:bg-white hover:text-black transition-all duration-200 text-base sm:text-sm order-1 sm:order-2"
+              className="flex-1 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
             >
-              {initialData ? "СОХРАНИТЬ" : "ДОБАВИТЬ"}
+              {initialData ? "Сохранить" : "Добавить"}
             </button>
           </div>
         </form>
