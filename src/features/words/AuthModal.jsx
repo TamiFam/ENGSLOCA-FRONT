@@ -176,13 +176,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
           >
             {isLogin ? "Нет аккаунта? Зарегистрироваться" : "Уже есть аккаунт? Войти"}
           </button>
-          <button
-  onClick={() => alert('CLICK WORKING')}
-  onTouchEnd={() => alert('TOUCH WORKING')}
-  style={{ padding: '20px', background: 'red', color: 'white' }}
->
-  ТЕСТ КНОПКИ
-</button>
+        
         </div>
       </div>
     </div>
