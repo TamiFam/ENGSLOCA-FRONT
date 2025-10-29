@@ -1,4 +1,3 @@
-
 import { Outlet, Link } from "react-router-dom";
 
 export default function WordListLayout() {
@@ -16,12 +15,13 @@ export default function WordListLayout() {
       <div className="fixed top-0 right-0 w-1 h-full bg-black"></div>
 
       {/* Хедер только с возвратом на главную */}
-      <div className="fixed top-4 left-4 z-50">
-        <Link 
+      <div className="relative z-50">
+        <Link
           to="/"
-          className="font-mono text-sm border-2 border-black px-4 py-1 hover:bg-black hover:text-white transition-all duration-200 tracking-widest"
+          className="absolute left-2 top-4 font-mono text-3xl px-4 py-1 tracking-widest 
+             transition-transform duration-200 ease-in-out hover:scale-125"
         >
-          🏠 НА ГЛАВНУЮ
+          🏠
         </Link>
       </div>
 

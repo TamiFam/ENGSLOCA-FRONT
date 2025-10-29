@@ -298,8 +298,8 @@ export default function WordList() {
         <div className="fixed top-4 right-4 z-50 md:hidden">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="bg-gray-100 text-gray-800 w-12 h-12 flex items-center justify-center rounded-2xl shadow-sm hover:shadow-md 
-          transition-all duration-300 border border-gray-200 hover:bg-gray-200"
+            className="bg-gray-200 text-gray-800 w-9 h-9 flex items-center justify-center rounded-xl shadow-xl hover:shadow-xl 
+          transition-all duration-300 border border-gray-300 hover:bg-gray-200"
           >
             {mobileMenuOpen ? "✕" : "☰"}
           </button>
