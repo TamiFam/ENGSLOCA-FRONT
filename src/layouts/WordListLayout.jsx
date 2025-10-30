@@ -18,7 +18,7 @@ export default function WordListLayout() {
       <div className="relative z-50">
         <Link
           to="/"
-          className="absolute left-2 top-4 font-mono text-3xl px-4 py-1 tracking-widest 
+          className="absolute left-2 top-4 font-mono text-2xl px-4 py-1 tracking-widest 
              transition-transform duration-200 ease-in-out hover:scale-125"
         >
           🏠

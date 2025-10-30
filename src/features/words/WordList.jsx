@@ -23,8 +23,20 @@ import WordCard from "./WordCard";
 export default function WordList() {
   const { user, logout } = useAuth();
   const [words, setWords] = useState([]);
-  const [currentWeek, setCurrentWeek] = useState(1);
-  const [page, setPage] = useState(1);
+  const [currentWeek, setCurrentWeek] = useState(() => {
+    const saved = localStorage.getItem('currentWeek');
+    return saved ? parseInt(saved) : 1; // По умолчанию 1, а не undefined
+  });
+  const [page, setPage] = useState(()=> {
+    const saved = localStorage.getItem('page')
+    return saved ? Number(saved):1
+  });
+
+  const [weekPages, setWeekPages] = useState(() => {
+    const saved = localStorage.getItem('weekPages');
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const [wordModalOpen, setWordModalOpen] = useState(false);
   const [wordInfoModal, setWordInfoModal] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -38,11 +50,34 @@ export default function WordList() {
 
   const { triggerParticipantsRefresh } = useAppEvents();
   const [allWordsHidden, setAllWordsHidden] = useState(false);
+ 
+
+  useEffect(() => {
+    localStorage.setItem('weekPages', JSON.stringify(weekPages));
+  }, [weekPages]);
 
   // 👇 Функция для показа тостов
   const showToast = (message, type = "info") => {
     setToast({ message, type });
   };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    if (currentWeek) {
+      setWeekPages(prev => ({
+        ...prev,
+        [currentWeek]: {
+          ...prev[currentWeek], // сохраняем существующие данные
+          currentPage: newPage, // текущая страница
+          totalPages: prev[currentWeek]?.totalPages || totalPages // общее кол-во страниц
+        }
+      }));
+    }
+  };
+ 
+  useEffect(()=> {
+    localStorage.setItem('page',page)
+  },[page])
 
   const closeToast = () => {
     setToast(null);
@@ -61,6 +96,46 @@ export default function WordList() {
       setAuthError("Для выполнения действия требуется авторизация");
     });
   }, []);
+
+  const handleWeekChange = (week) => {
+    // Сохраняем текущую страницу для предыдущей недели
+    if (currentWeek) {
+      setWeekPages(prev => ({
+        ...prev,
+        [currentWeek]: {
+          ...prev[currentWeek],
+          currentPage: page,
+          totalPages: totalPages
+        }
+      }));
+    }
+
+    // Устанавливаем новую неделю
+    setCurrentWeek(week);
+    
+    // WeekSelector сам проверит корректность страницы через getPagesCount
+    // и вызовет onPageChange(1) если нужно
+    
+    localStorage.setItem('currentWeek', week);
+  };
+  const getPagesCount = (week) => {
+    if (week === currentWeek) {
+      return totalPages;
+    }
+    // ✅ Возвращаем сохраненное количество страниц для конкретной недели
+    return weekPages[week]?.totalPages || 1;
+  };
+  useEffect(() => {
+    if (currentWeek && totalPages) {
+      setWeekPages(prev => ({
+        ...prev,
+        [currentWeek]: { 
+          ...prev[currentWeek],
+          totalPages 
+        }
+      }));
+    }
+  }, [currentWeek, totalPages]);
 
   const canEdit = (user) => {
     return user && (user.role === "admin" || user.role === "member");
@@ -301,12 +376,9 @@ export default function WordList() {
   }, [currentWeek, words.length, loading, allWordsHidden]);
 
   // ✅ Мемоизируем WeekSelector
-  const weekSelector = useMemo(
-    () => (
-      <WeekSelector currentWeek={currentWeek} onWeekChange={setCurrentWeek} />
-    ),
-    [currentWeek]
-  );
+  
+      
+   
 
   // ✅ Мемоизируем модалки
   const worldInfoModal = useMemo(
@@ -471,7 +543,13 @@ export default function WordList() {
         </div>
 
         {/* WeekSelector с адаптивным стилем */}
-        {weekSelector}
+        <WeekSelector
+        currentWeek={currentWeek}
+        onWeekChange={handleWeekChange}
+        currentPage={page}
+        onPageChange={handlePageChange}
+        getPagesCount={getPagesCount}
+      />
 
         {/* ВТОРАЯ СЕКЦИЯ С "ДОБАВИТЬ СЛОВО"*/}
         {memoizedAddWeeker}
@@ -508,6 +586,7 @@ export default function WordList() {
               page={page}
               onPrev={handlePrevPage}
               onNext={handleNextPage}
+              onSelectPage={setPage}
             />
             <div className="space-y-4 sm:space-y-6">
               {words.map((w, index) => (
@@ -528,6 +607,7 @@ export default function WordList() {
               page={page}
               onPrev={handlePrevPage}
               onNext={handleNextPage}
+              onSelectPage={setPage}
             />
           </>
         )}

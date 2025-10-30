@@ -18,7 +18,7 @@ export default function MainLayout() {
       {/* Хедер главной страницы */}
       <div className="fixed  z-50">
         <div 
-          className="absolute left-2 top-4 font-mono text-3xl px-4 py-1 transition-all duration-200 tracking-widest"
+          className="absolute left-2 top-4 font-mono text-2xl px-4 py-1 transition-all duration-200 tracking-widest"
         >
           🏠
         </div>
