@@ -526,7 +526,8 @@ export default function WordList() {
             <WordsPageSwitcher
               totalPages={totalPages}
               page={page}
-              setPage={setPage}
+              onPrev={handlePrevPage}
+              onNext={handleNextPage}
             />
           </>
         )}
