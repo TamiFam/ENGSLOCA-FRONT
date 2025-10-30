@@ -11,8 +11,8 @@ export default function ParticipantsSidebar() {
   // Мемоизируем функции
   const getRoleSymbol = useCallback((role) => {
     switch (role) {
-      case 'admin': return '👑';
-      case 'member': return '👤';
+      case 'admin': return '🚀';
+      case 'member': return '💎';
       case 'viewer': return '👀';
       default: return '❓';
     }
