@@ -8,7 +8,7 @@ export default function ParticipantsSidebar() {
   const { token, user } = useAuth();
   const API_BASE = "https://engsloca-back.onrender.com";
 
-  // Мемоизируем функцию для стабильной ссылки
+  // Мемоизируем функции
   const getRoleSymbol = useCallback((role) => {
     switch (role) {
       case 'admin': return '👑';
@@ -18,7 +18,6 @@ export default function ParticipantsSidebar() {
     }
   }, []);
 
-  // Мемоизируем функцию форматирования времени
   const getLastSeenText = useCallback((lastSeen) => {
     if (!lastSeen) return 'никогда';
     
@@ -37,6 +36,7 @@ export default function ParticipantsSidebar() {
     return `${Math.floor(diffDays / 7)}н`;
   }, []);
 
+  // Загрузка участников только при монтировании
   const loadParticipants = useCallback(async () => {
     if (!token) return;
     
@@ -52,27 +52,7 @@ export default function ParticipantsSidebar() {
       
       if (res.ok) {
         const data = await res.json();
-        setParticipants(prevParticipants => {
-          const prevMap = new Map(prevParticipants.map(p => [p.id, p]));
-          const newMap = new Map(data.participants.map(p => [p.id, p]));
-          
-          let hasChanges = false;
-          if (prevParticipants.length !== data.participants.length) {
-            hasChanges = true;
-          } else {
-            for (const newParticipant of data.participants) {
-              const oldParticipant = prevMap.get(newParticipant.id);
-              if (!oldParticipant || 
-                  oldParticipant.isOnline !== newParticipant.isOnline ||
-                  oldParticipant.lastSeen !== newParticipant.lastSeen) {
-                hasChanges = true;
-                break;
-              }
-            }
-          }
-          
-          return hasChanges ? data.participants : prevParticipants;
-        });
+        setParticipants(data.participants || []);
       }
     } catch (error) {
       console.error('Ошибка загрузки участников:', error);
@@ -81,13 +61,15 @@ export default function ParticipantsSidebar() {
     }
   }, [token]);
 
+  // Загружаем только при монтировании и при изменении токена
   useEffect(() => {
-    if (token) {
-      loadParticipants();
-      const interval = setInterval(loadParticipants, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [loadParticipants, token]);
+    loadParticipants();
+  }, [loadParticipants]);
+
+  // Убираем интервал - обновляем только при явном действии
+  const handleRefresh = useCallback(() => {
+    loadParticipants();
+  }, [loadParticipants]);
 
   // Мемоизируем статистику
   const stats = useMemo(() => ({
@@ -95,8 +77,8 @@ export default function ParticipantsSidebar() {
     online: participants.filter(p => p.isOnline).length
   }), [participants]);
 
-  // Компактный вид для мобильных
-  const MobileCompactView = () => (
+  // Мемоизируем представления
+  const MobileCompactView = useMemo(() => (
     <div className="lg:hidden">
       <div 
         className="bg-black text-white p-3 border-2 border-black flex items-center justify-between cursor-pointer"
@@ -154,13 +136,21 @@ export default function ParticipantsSidebar() {
         </div>
       )}
     </div>
-  );
+  ), [isExpanded, participants, stats.online, getRoleSymbol, getLastSeenText]);
 
-  // Десктопный вид
-  const DesktopView = () => (
+  const DesktopView = useMemo(() => (
     <div className="hidden lg:block w-64 bg-white border-4 border-black relative">
       <div className="bg-black text-white p-4 border-b-4 border-black">
-        <h3 className="text-lg font-black text-center">УЧАСТНИКИ</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-black">УЧАСТНИКИ</h3>
+          <button 
+            onClick={handleRefresh}
+            className="text-xs bg-white text-black px-2 py-1 font-bold rounded hover:bg-gray-200 transition-colors"
+            title="Обновить"
+          >
+            🔄
+          </button>
+        </div>
       </div>
 
       <div className="p-4">
@@ -185,14 +175,12 @@ export default function ParticipantsSidebar() {
             {participants.map((participant) => (
               <div
                 key={participant.id}
-                className={`border-2 border-black p-3 rounded-lg transition-all duration-500 ${
-                  participant.isOnline 
-                    ? 'bg-green-50 hover:bg-green-100' 
-                    : 'bg-white hover:bg-gray-50'
+                className={`border-2 border-black p-3 rounded-lg ${
+                  participant.isOnline ? 'bg-green-50' : 'bg-white'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full border-2 border-black transition-colors duration-700 ${
+                  <div className={`w-3 h-3 rounded-full border-2 border-black ${
                     participant.isOnline ? 'bg-green-500' : 'bg-gray-400'
                   }`} />
                   
@@ -239,12 +227,12 @@ export default function ParticipantsSidebar() {
         </div>
       </div>
     </div>
-  );
+  ), [participants, loading, stats.total, stats.online, handleRefresh, getRoleSymbol, getLastSeenText]);
 
   return (
     <>
-      <MobileCompactView />
-      <DesktopView />
+      {MobileCompactView}
+      {DesktopView}
     </>
   );
 }

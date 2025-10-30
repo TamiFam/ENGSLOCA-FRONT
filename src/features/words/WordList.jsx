@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   fetchWords,
   createWord,
@@ -16,7 +16,9 @@ import { useAppEvents } from "../../context/AppEventsContext";
 import Toast from "../../components/Toast";
 import WorldInfoModal from "./WorldInfoModal";
 import AddWeeker from "./AddWeeker";
-import WordsLurk from "./WordsLurk";
+
+import WordsPageSwitcher from "./WordsPageSwitcher";
+import WordCard from "./WordCard";
 
 export default function WordList() {
   const { user, logout } = useAuth();
@@ -45,6 +47,13 @@ export default function WordList() {
   const closeToast = () => {
     setToast(null);
   };
+  const handlePrevPage = useCallback(() => {
+    setPage((p) => Math.max(1, p - 1));
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    setPage((p) => p + 1);
+  }, []);
 
   useEffect(() => {
     setAuthModalHandler(() => {
@@ -61,9 +70,9 @@ export default function WordList() {
     return user && user.role === "admin"; // Только админ может удалять
   };
 
-  const canAdd = (user) => {
-    return user && (user.role === "admin" || user.role === "member");
-  };
+  // const canAdd = (user) => {
+  //   return user && (user.role === "admin" || user.role === "member");
+  // };
 
   const loadWords = async () => {
     setLoading(true);
@@ -91,31 +100,36 @@ export default function WordList() {
     loadWords();
   }, [page, currentWeek]);
 
-  const handleEditClick = (word) => {
-    if (!user) {
-      showToast("Для редактирования слов требуется авторизация", "warning");
-      setAuthModalOpen(true);
-      return;
-    }
-    // 👇 Проверка прав для редактирования
-    if (!canEdit(user)) {
-      showToast("У вас нет прав для редактирования слов", "error"); // 👈
-      return;
-    }
-    setEditWord(word);
-    setWordModalOpen(true);
-  };
+  const stableHandleEditClick = useCallback(
+    (word) => {
+      if (!user) {
+        showToast("Для редактирования слов требуется авторизация", "warning");
+        setAuthModalOpen(true);
+        return;
+      }
+      // 👇 Проверка прав для редактирования
+      if (!canEdit(user)) {
+        showToast("У вас нет прав для редактирования слов", "error");
+        return;
+      }
+      setEditWord(word);
+      setWordModalOpen(true);
+    },
+    [user, showToast]
+  ); // ← зависимости: user и showToast
 
-  const handleWordInfo = (word) => {
-    if (!user) {
-      showToast("Для редактирования слов требуется авторизация", "warning");
-      setAuthModalOpen(true);
-      return;
-    }
-
-    setSelectedWord(word);
-    setWordInfoModal(true);
-  };
+  const stableHandleWordInfo = useCallback(
+    (word) => {
+      if (!user) {
+        showToast("Для редактирования слов требуется авторизация", "warning");
+        setAuthModalOpen(true);
+        return;
+      }
+      setSelectedWord(word);
+      setWordInfoModal(true);
+    },
+    [user, showToast]
+  ); // ← зависимости: user и showToast
 
   const handleDeleteClick = async (id) => {
     if (!user) {
@@ -130,7 +144,6 @@ export default function WordList() {
       return;
     }
 
-    // 👇 Красивое подтверждение удаления вместо стандартного confirm
     showToast(
       <div className="flex flex-col gap-2">
         <p className="font-black">Удалить слово?</p>
@@ -271,6 +284,73 @@ export default function WordList() {
     }, 500);
   };
 
+  const memoizedAddWeeker = useMemo(() => {
+    return (
+      <AddWeeker
+        currentWeek={currentWeek}
+        words={words.length}
+        showToast={showToast}
+        setAuthModalOpen={setAuthModalOpen}
+        setWordModalOpen={setWordModalOpen}
+        setEditWord={setEditWord}
+        loading={loading}
+        allWordsHidden={allWordsHidden}
+        setAllWordsHidden={setAllWordsHidden}
+      />
+    );
+  }, [currentWeek, words.length, loading, allWordsHidden]);
+
+  // ✅ Мемоизируем WeekSelector
+  const weekSelector = useMemo(
+    () => (
+      <WeekSelector currentWeek={currentWeek} onWeekChange={setCurrentWeek} />
+    ),
+    [currentWeek]
+  );
+
+  // ✅ Мемоизируем модалки
+  const worldInfoModal = useMemo(
+    () => (
+      <WorldInfoModal
+        isOpen={wordInfoModal}
+        onClose={() => {
+          setWordInfoModal(false);
+          setSelectedWord(null);
+        }}
+        onSave={handleSave}
+        initialData={selectedWord}
+      />
+    ),
+    [wordInfoModal, selectedWord]
+  );
+
+  const wordModal = useMemo(
+    () => (
+      <WordModal
+        isOpen={wordModalOpen}
+        onClose={() => setWordModalOpen(false)}
+        onSave={handleSave}
+        initialData={editWord}
+      />
+    ),
+    [wordModalOpen, editWord]
+  );
+
+  const authModal = useMemo(
+    () => (
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => {
+          setAuthModalOpen(false);
+          setAuthError(null);
+        }}
+        onSuccess={handleAuthSuccess}
+        error={authError}
+      />
+    ),
+    [authModalOpen, authError]
+  );
+
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
       {/* Toast уведомление */}
@@ -391,25 +471,10 @@ export default function WordList() {
         </div>
 
         {/* WeekSelector с адаптивным стилем */}
-        <div className="mb-6 sm:mb-8">
-          <WeekSelector
-            currentWeek={currentWeek}
-            onWeekChange={setCurrentWeek}
-          />
-        </div>
+        {weekSelector}
 
         {/* ВТОРАЯ СЕКЦИЯ С "ДОБАВИТЬ СЛОВО"*/}
-        <AddWeeker
-          currentWeek={currentWeek}
-          words={words}
-          showToast={showToast}
-          setAuthModalOpen={setAuthModalOpen}
-          setWordModalOpen={setWordModalOpen}
-          setEditWord={setEditWord}
-          loading={loading}
-          allWordsHidden={allWordsHidden}
-          setAllWordsHidden={setAllWordsHidden}
-        />
+        {memoizedAddWeeker}
 
         {/* Список слов с адаптивным дизайном */}
         {loading ? (
@@ -438,186 +503,42 @@ export default function WordList() {
           </div>
         ) : (
           <>
+            <WordsPageSwitcher
+              totalPages={totalPages}
+              page={page}
+              onPrev={handlePrevPage}
+              onNext={handleNextPage}
+            />
             <div className="space-y-4 sm:space-y-6">
               {words.map((w, index) => (
-                <div
+                <WordCard
                   key={w._id}
-                  className={`bg-white border-4 border-black p-4 sm:p-6 lg:p-8 hover:shadow-[4px_4px_0_0_#000] sm:hover:shadow-[8px_8px_0_0_#000] transition-all duration-300 group relative ${
-                    index % 2 === 0
-                      ? "sm:rotate-1 hover:rotate-0"
-                      : "sm:-rotate-1 hover:rotate-0"
-                  }`}
-                >
-                  {/* Номер карточки */}
-                  <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-6 h-6 sm:w-8 sm:h-8 bg-black text-white flex items-center justify-center text-xs sm:text-sm font-bold">
-                    {index + 1}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6 ">
-                        <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`text-2xl sm:text-3xl lg:text-3xl font-black wrap-break-word transition-all duration-500 ${
-                                allWordsHidden
-                                  ? "filter blur-[5px] opacity-70 backdrop-blur-sm bg-white/20 rounded-lg px-2"
-                                  : "filter blur-0 text-black"
-                              }`}
-                            >
-                              {w.word}
-                            </span>
-
-                            {/* кнопка доп инфы  */}
-                            <button
-                              onClick={() => handleWordInfo(w)}
-                              className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-500 text-white border-2 border-black 
-                 hover:bg-purple-600 transition-colors duration-200 flex items-center 
-                 justify-center shrink-0"
-                              title="Детали и заметки"
-                            >
-                              <svg
-                                className="w-4 h-4 sm:w-5 sm:h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 3a2 2 0 00-2 2v3a2 2 0 01-2 2H4a2 2 0 100 4h1a2 2 0 012 2v3a2 2 0 002 2m6-18a2 2 0 012 2v3a2 2 0 002 2h1a2 2 0 110 4h-1a2 2 0 00-2 2v3a2 2 0 01-2 2"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-
-                          <span
-                            className={`text-sm sm:text-lg text-gray-600 font-mono bg-gray-100 px-2 py-1 self-start
-                          ${
-                            allWordsHidden
-                              ? "filter blur-[5px] text-gray-400"
-                              : "filter blur-0 text-black"
-                          }`}
-                          >
-                            [{w.transcriptionUK}]
-                          </span>
-
-                          <span className="hidden sm:inline text-2xl text-gray-400">
-                            —
-                          </span>
-
-                          <span className="text-xl sm:text-2xl font-bold text-gray-800 wrap-break-words">
-                            {w.translation}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6">
-                        <span className="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300">
-                          {w.partOfSpeech}
-                        </span>
-                        <span className="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-bold bg-green-100 text-green-800 border border-green-300">
-                          {w.category}
-                        </span>
-                        <span className="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300">
-                          WEEK {w.week}
-                        </span>
-                      </div>
-                    </div>
-
-                    {user && (
-                      <div className="flex gap-2   sm:ml-6 opacity-100 transition-opacity duration-300 self-end sm:self-start ">
-                        <button
-                          onClick={() => handleEditClick(w)}
-                          disabled={!canEdit(user)}
-                          className="w-8 h-8 sm:w-8 sm:h-8 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center shrink-0"
-                          title="Редактировать"
-                        >
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-</svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(w._id)}
-                          disabled={!canDelete(user)}
-                          className="w-8 h-8 sm:w-8 sm:h-8 bg-red-500 text-white border-2 border-black hover:bg-red-600 transition-colors duration-200 flex items-center justify-center shrink-0"
-                          title="Удалить"
-                        >
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-</svg>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col md:flex-row md:items-center w-full">
-                    {(Date.now() - new Date(w.createdAt)) /
-                      (1000 * 60 * 60 * 24) <
-                    1 ? (
-                      <span className=" inline-block  w-fit mb-1 md:mb-0 md:ml-auto rounded-full bg-red-100 px-2 py-0.5 text-xs sm:text-sm font-semibold text-red-600">
-                        NEW
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
+                  word={w}
+                  index={index}
+                  allWordsHidden={allWordsHidden}
+                  onEditClick={stableHandleEditClick}
+                  onWordInfo={stableHandleWordInfo}
+                  onDeleteClick={handleDeleteClick}
+                  user={user}
+                />
               ))}
             </div>
-
-            {totalPages > 1 && (
-              <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="bg-white border-2 border-black px-4 sm:px-6 py-2 sm:py-3 font-bold text-sm sm:text-base disabled:opacity-40 disabled:cursor-not-allowed hover:bg-black hover:text-white transition-all duration-200 w-full sm:w-auto"
-                >
-                  ← BACK
-                </button>
-                <span className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 font-bold text-sm sm:text-base border-2 border-black text-center w-full sm:w-auto">
-                  PAGE {page} OF {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page >= totalPages}
-                  className="bg-white border-2 border-black px-4 sm:px-6 py-2 sm:py-3 font-bold text-sm sm:text-base disabled:opacity-40 disabled:cursor-not-allowed hover:bg-black hover:text-white transition-all duration-200 w-full sm:w-auto"
-                >
-                  NEXT →
-                </button>
-              </div>
-            )}
+            <WordsPageSwitcher
+              totalPages={totalPages}
+              page={page}
+              setPage={setPage}
+            />
           </>
         )}
 
         {/* <WordsLurk
                 
                 /> */}
-        <WorldInfoModal
-          isOpen={wordInfoModal}
-          onClose={() => {
-            setWordInfoModal(false);
-            setSelectedWord(null);
-          }}
-          onSave={handleSave}
-          initialData={selectedWord}
-        />
+        {worldInfoModal}
 
-        <WordModal
-          isOpen={wordModalOpen}
-          onClose={() => setWordModalOpen(false)}
-          onSave={handleSave}
-          initialData={editWord}
-        />
+        {wordModal}
 
-        <AuthModal
-          isOpen={authModalOpen}
-          onClose={() => {
-            setAuthModalOpen(false);
-            setAuthError(null);
-          }}
-          onSuccess={handleAuthSuccess}
-          error={authError}
-        />
+        {authModal}
       </div>
 
       {/* Футер в стиле минимализм */}

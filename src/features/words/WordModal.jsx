@@ -10,6 +10,11 @@ export default function WordModal({ isOpen, onClose, onSave, initialData }) {
     transcriptionUK: "",
     transcriptionUS: "",
   });
+  const limits = {
+    word: 45,           // Лимит для слова
+    translation: 45,   // Лимит для перевода
+    
+  };
 
   const partsOfSpeech = [
     { value: "noun", label: "📚 Сущ", title: "Существительное" },
@@ -32,7 +37,7 @@ export default function WordModal({ isOpen, onClose, onSave, initialData }) {
         word: initialData.word || "",
         translation: initialData.translation || "",
         partOfSpeech: initialData.partOfSpeech || "noun",
-        category: initialData.category || "basic", // 👈 ДОБАВЬ
+        category: initialData.category || "basic", // 
         transcriptionUK: initialData.transcriptionUK || "",
         transcriptionUS: initialData.transcriptionUS || "",
       });
@@ -42,7 +47,7 @@ export default function WordModal({ isOpen, onClose, onSave, initialData }) {
         word: "",
         translation: "",
         partOfSpeech: "noun",
-        category: "basic", // 👈 ДОБАВЬ
+        category: "basic", 
         transcriptionUK: "",
         transcriptionUS: "",
       });
@@ -56,6 +61,12 @@ export default function WordModal({ isOpen, onClose, onSave, initialData }) {
       onClose();
     }, 200);
   };
+  const handleChange =(field,value) => {
+    if(value.length <= limits[field]) {
+      setForm(prev => ({ ...prev, [field]: value }))
+    }
+    
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -70,6 +81,7 @@ export default function WordModal({ isOpen, onClose, onSave, initialData }) {
     console.log('📤 Отправляемые данные:', cleanedData); // 👈 Для отладки
     onSave(cleanedData);
   };
+  
 
   if (!isOpen && !isClosing) return null;
 
@@ -105,28 +117,57 @@ export default function WordModal({ isOpen, onClose, onSave, initialData }) {
           <div className="flex gap-3">
             {/* Word Input */}
             <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Слово</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Слово {form.word.length}/{limits.word}</label>
+              <div className="relative">
               <input
                 value={form.word}
-                onChange={(e) => setForm(prev => ({ ...prev, word: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+                onChange={(e) => handleChange('word',e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-500 transition-colors duration-200 ${
+                  form.word.length > limits.word * 0.99 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-gray-300 focus:ring-green-500 focus:border-blue-500'
+                }`}
                 placeholder="word"
                 autoFocus
                 required
               />
+               {/* 👇 Индикатор лимита */}
+               {/* {form.word.length > 0 && (
+                  <div className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-xs ${
+                    form.word.length > limits.word * 0.8 ? 'text-red-500' : 'text-gray-400'
+                  }`}>
+                    {form.word.length}/{limits.word}
+                  </div>
+                )} */}
+              
+              </div>
             </div>
 
             {/* Translation Input */}
             <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Перевод</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Перевод {form.translation.length}/{limits.translation}</label>
+              <div className="relative"></div>
               <input
                 value={form.translation}
-                onChange={(e) => setForm(prev => ({ ...prev, translation: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500"
+                onChange={(e)  => handleChange('translation',e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-500 transition-colors duration-200 ${
+                  form.translation.length > limits.translation * 0.99 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-gray-300 focus:ring-green-500 focus:border-blue-500'
+                }`}
                 placeholder="translate"
                 required
               />
-            </div>
+               {/* {form.translation.length > 0 && (
+                  <div className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-xs ${
+                    form.translation.length > limits.translation * 0.8 ? 'text-red-500' : 'text-gray-400'
+                  }`}>
+                    {form.translation.length}/{limits.translation}
+                  </div>
+                )} */}
+              </div>
+          
+            
           </div>
 
           {/* Part of Speech & Category */}
