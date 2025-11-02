@@ -12,7 +12,7 @@ export default function TestModal({
   const [testStage, setTestStage] = useState('config');
   const [testConfig, setTestConfig] = useState({
     week: currentWeek || 1,
-    wordsCount: 5,
+    wordsCount: 15,
   });
   const [weekWords, setWeekWords] = useState([]);
   const [loading, setLoading] = useState(false); // ← ДОБАВИЛ loading состояние
