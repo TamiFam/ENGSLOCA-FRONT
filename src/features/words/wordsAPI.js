@@ -46,6 +46,34 @@ export const fetchWords = async (params) => {
   }
 };
 
+export const fetchAllWeekWords = async (week) => {
+  try {
+    const response = await axios.get("/words", { 
+      params: { 
+        week: week,
+        limit: 1000 // Большой лимит чтобы получить все слова
+      } 
+    });
+    return response;
+  } catch (error) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      return handleApiError(error);
+    }
+    
+    if (error.response?.status === 404 || error.response?.status === 500) {
+      return {
+        data: {
+          words: [],
+          week: week,
+          total: 0
+        }
+      };
+    }
+    
+    return handleApiError(error);
+  }
+};
+
 export const createWord = async (data) => {
   try {
     const response = await axios.post("/words", data);

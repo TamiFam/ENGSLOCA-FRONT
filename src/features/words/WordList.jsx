@@ -52,6 +52,9 @@ export default function WordList() {
   const [allWordsHidden, setAllWordsHidden] = useState(false);
  
 
+  
+  
+
   useEffect(() => {
     localStorage.setItem('weekPages', JSON.stringify(weekPages));
   }, [weekPages]);
@@ -77,6 +80,7 @@ export default function WordList() {
  
   useEffect(()=> {
     localStorage.setItem('page',page)
+  
   },[page])
 
   const closeToast = () => {
@@ -92,6 +96,7 @@ export default function WordList() {
 
   useEffect(() => {
     setAuthModalHandler(() => {
+      
       setAuthModalOpen(true);
       setAuthError("Для выполнения действия требуется авторизация");
     });
@@ -363,7 +368,7 @@ export default function WordList() {
     return (
       <AddWeeker
         currentWeek={currentWeek}
-        words={words.length}
+        wordsCount={words.length}
         showToast={showToast}
         setAuthModalOpen={setAuthModalOpen}
         setWordModalOpen={setWordModalOpen}
@@ -373,7 +378,7 @@ export default function WordList() {
         setAllWordsHidden={setAllWordsHidden}
       />
     );
-  }, [currentWeek, words.length, loading, allWordsHidden]);
+  }, [currentWeek, words.length, loading, allWordsHidden,]);
 
   // ✅ Мемоизируем WeekSelector
   
