@@ -102,36 +102,51 @@ function AddWeeker({
   }, []);
 
  
-const handleTestComplete = async (results) => {
-  console.log("Результаты теста:", results);
-
-  const score = results.tolerantPercentage; 
+  const handleTestComplete = async (results) => {
+    console.log("Результаты теста:", results);
   
-  if (score > 50) {
-    setWeekTestOn(true);
-  } else {
-    setWeekTestOn(false);
-    return; // если <= 50, тест не пройден
-  }
-  try {
-    const res = await fetch("/api/tests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: user._id,
-        week: currentWeek,
-        score,
-      }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
-
-    console.log("Результат успешно сохранён:", data.testResults);
-  } catch (err) {
-    console.error("Ошибка при сохранении результата:", err.message);
-  }
-};
+    const score = results.tolerantPercentage;
+    
+    if (!user?._id) {
+      console.error("Пользователь не найден, результат не будет сохранён");
+      return;
+    }
+  
+    if (score > 50) {
+      setWeekTestOn(true);
+    } else {
+      setWeekTestOn(false);
+      return; // если <= 50, тест не пройден
+    }
+  
+    const payload = {
+      userId: user._id,
+      week: currentWeek,
+      score,
+    };
+  
+    console.log("Отправляем результат:", payload);
+  
+    try {
+      const res = await fetch("/api/tests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        console.error("Ошибка от сервера:", data);
+        throw new Error(data.message || "Ошибка записи теста");
+      }
+  
+      console.log("Результат успешно сохранён:", data.testResults);
+    } catch (err) {
+      console.error("Ошибка при сохранении результата:", err.message);
+    }
+  };
+  
 
 
   return (
