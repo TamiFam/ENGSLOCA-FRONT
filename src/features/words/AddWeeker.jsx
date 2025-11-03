@@ -17,7 +17,9 @@ function AddWeeker({
 }) {
   const { user } = useAuth();
   const [porverkaWordsModal, setProverkaWordsModal] = useState(false);
-  const [weekTestOn, setWeekTestOn] = useState(false);
+  const [weekTestOn, setWeekTestOn] = useState(()=> {
+    return localStorage.getItem(`weekTestOn-${currentWeek}`) === 'true'
+  });
   const [weekWords, setWeekWords] = useState([]);
   
   const API_BASE = "https://engsloca-back.onrender.com";
@@ -37,6 +39,10 @@ function AddWeeker({
     useEffect(() => {
       loadWeekWords(currentWeek);
     }, [currentWeek]); // ← ДОБАВЬ currentWeek В ЗАВИСИМОСТЬ
+    useEffect(() => {
+      // Сохраняем значение weekTestOn в localStorage
+      localStorage.setItem(`weekTestOn-${currentWeek}`, weekTestOn);
+    }, [weekTestOn, currentWeek])
 
   
 
