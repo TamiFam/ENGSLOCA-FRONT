@@ -107,6 +107,32 @@ function AddWeeker({
     setProverkaWordsModal(true);
   }, []);
 
+  useEffect(() => {
+    const checkUserTestResult = async () => {
+      if (!user?._id) return;
+  
+      try {
+        const res = await fetch(`${API_BASE}/api/tests/${user._id}`);
+        const data = await res.json();
+  
+        if (res.ok && Array.isArray(data.testResults)) {
+          // Проверяем, есть ли тест для текущей недели
+          const weekTest = data.testResults.find(t => Number(t.week) === Number(currentWeek));
+          if (weekTest && weekTest.score > 50) {
+            setWeekTestOn(true);
+            localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
+          } else {
+            setWeekTestOn(false);
+            localStorage.removeItem(`weekTestOn-${currentWeek}`);
+          }
+        }
+      } catch (err) {
+        console.error("Ошибка проверки теста:", err);
+      }
+    };
+  
+    checkUserTestResult();
+  }, [user, currentWeek]);
  
   const handleTestComplete = async (results) => {
     console.log("Результаты теста:", results);
