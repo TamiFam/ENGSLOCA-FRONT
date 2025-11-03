@@ -24,16 +24,16 @@ export default function WordList() {
   const { user, logout } = useAuth();
   const [words, setWords] = useState([]);
   const [currentWeek, setCurrentWeek] = useState(() => {
-    const saved = localStorage.getItem('currentWeek');
+    const saved = localStorage.getItem("currentWeek");
     return saved ? parseInt(saved) : 1; // По умолчанию 1, а не undefined
   });
-  const [page, setPage] = useState(()=> {
-    const saved = localStorage.getItem('page')
-    return saved ? Number(saved):1
+  const [page, setPage] = useState(() => {
+    const saved = localStorage.getItem("page");
+    return saved ? Number(saved) : 1;
   });
 
   const [weekPages, setWeekPages] = useState(() => {
-    const saved = localStorage.getItem('weekPages');
+    const saved = localStorage.getItem("weekPages");
     return saved ? JSON.parse(saved) : {};
   });
 
@@ -52,11 +52,8 @@ export default function WordList() {
   const [allWordsHidden, setAllWordsHidden] = useState(false);
   const [totalWordsCount, setTotalWordsCount] = useState(0);
 
-  
-  
-
   useEffect(() => {
-    localStorage.setItem('weekPages', JSON.stringify(weekPages));
+    localStorage.setItem("weekPages", JSON.stringify(weekPages));
   }, [weekPages]);
 
   // 👇 Функция для показа тостов
@@ -67,21 +64,20 @@ export default function WordList() {
   const handlePageChange = (newPage) => {
     setPage(newPage);
     if (currentWeek) {
-      setWeekPages(prev => ({
+      setWeekPages((prev) => ({
         ...prev,
         [currentWeek]: {
           ...prev[currentWeek], // сохраняем существующие данные
           currentPage: newPage, // текущая страница
-          totalPages: prev[currentWeek]?.totalPages || totalPages // общее кол-во страниц
-        }
+          totalPages: prev[currentWeek]?.totalPages || totalPages, // общее кол-во страниц
+        },
       }));
     }
   };
- 
-  useEffect(()=> {
-    localStorage.setItem('page',page)
-  
-  },[page])
+
+  useEffect(() => {
+    localStorage.setItem("page", page);
+  }, [page]);
 
   const closeToast = () => {
     setToast(null);
@@ -96,7 +92,6 @@ export default function WordList() {
 
   useEffect(() => {
     setAuthModalHandler(() => {
-      
       setAuthModalOpen(true);
       setAuthError("Для выполнения действия требуется авторизация");
     });
@@ -105,23 +100,23 @@ export default function WordList() {
   const handleWeekChange = (week) => {
     // Сохраняем текущую страницу для предыдущей недели
     if (currentWeek) {
-      setWeekPages(prev => ({
+      setWeekPages((prev) => ({
         ...prev,
         [currentWeek]: {
           ...prev[currentWeek],
           currentPage: page,
-          totalPages: totalPages
-        }
+          totalPages: totalPages,
+        },
       }));
     }
 
     // Устанавливаем новую неделю
     setCurrentWeek(week);
-    
+
     // WeekSelector сам проверит корректность страницы через getPagesCount
     // и вызовет onPageChange(1) если нужно
-    
-    localStorage.setItem('currentWeek', week);
+
+    localStorage.setItem("currentWeek", week);
   };
   const getPagesCount = (week) => {
     if (week === currentWeek) {
@@ -132,12 +127,12 @@ export default function WordList() {
   };
   useEffect(() => {
     if (currentWeek && totalPages) {
-      setWeekPages(prev => ({
+      setWeekPages((prev) => ({
         ...prev,
-        [currentWeek]: { 
+        [currentWeek]: {
           ...prev[currentWeek],
-          totalPages 
-        }
+          totalPages,
+        },
       }));
     }
   }, [currentWeek, totalPages]);
@@ -382,12 +377,9 @@ export default function WordList() {
         setAllWordsHidden={setAllWordsHidden}
       />
     );
-  }, [currentWeek, loading, allWordsHidden,]);
+  }, [currentWeek, loading, allWordsHidden]);
 
   // ✅ Мемоизируем WeekSelector
-  
-      
-   
 
   // ✅ Мемоизируем модалки
   const worldInfoModal = useMemo(
@@ -484,11 +476,14 @@ export default function WordList() {
                 </button>
               </div>
             ) : (
-              <div className="bg-yellow-200 border-2 border-black px-4 py-3 text-base font-bold text-center mb-8">
-                🔒 Требуется авторизация
+              <div className="bg-yellow-200  border-2 border-black px-4 py-2 text-sm font-bold mb-4 mt-4 flex justify-center">                
+                <button onClick={() => setAuthModalOpen(true)}>
+                  🔒 Требуется авторизация
+                </button>
               </div>
+              
             )}
-
+{authModal}
             <div className="mb-8">
               <ParticipantsSidebar />
             </div>
@@ -511,7 +506,7 @@ export default function WordList() {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Хедер в стиле брутализм */}
+        {/* Хедер*/}
         <div className="text-center mb-8 sm:mb-16">
           <div className="inline-block bg-yellow-300 border-4 border-black px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 rotate-1 sm:rotate-2 hover:rotate-0 transition-transform duration-300">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight leading-tight">
@@ -553,12 +548,12 @@ export default function WordList() {
 
         {/* WeekSelector с адаптивным стилем */}
         <WeekSelector
-        currentWeek={currentWeek}
-        onWeekChange={handleWeekChange}
-        currentPage={page}
-        onPageChange={handlePageChange}
-        getPagesCount={getPagesCount}
-      />
+          currentWeek={currentWeek}
+          onWeekChange={handleWeekChange}
+          currentPage={page}
+          onPageChange={handlePageChange}
+          getPagesCount={getPagesCount}
+        />
 
         {/* ВТОРАЯ СЕКЦИЯ С "ДОБАВИТЬ СЛОВО"*/}
         {memoizedAddWeeker}
@@ -621,9 +616,7 @@ export default function WordList() {
           </>
         )}
 
-        {/* <WordsLurk
-                
-                /> */}
+       
         {worldInfoModal}
 
         {wordModal}

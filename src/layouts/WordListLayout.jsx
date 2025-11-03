@@ -16,13 +16,13 @@ export default function WordListLayout() {
 
       {/* Хедер только с возвратом на главную */}
       <div className="relative z-50">
-        <Link
+        {/* <Link
           to="/"
           className="absolute left-2 top-4 font-mono text-2xl px-4 py-1 tracking-widest 
              transition-transform duration-200 ease-in-out hover:scale-125"
         >
           🏠
-        </Link>
+        </Link> */}
       </div>
 
       {/* Основной контент */}
