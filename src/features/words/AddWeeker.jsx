@@ -20,7 +20,7 @@ function AddWeeker({
   const [weekTestOn, setWeekTestOn] = useState(false);
   const [weekWords, setWeekWords] = useState([]);
   
-
+  const API_BASE = "https://engsloca-back.onrender.com";
     // 👇 Функция загрузки слов недели
     const loadWeekWords = async (week) => {
       
@@ -128,7 +128,7 @@ function AddWeeker({
     console.log("Отправляем результат:", payload);
   
     try {
-      const res = await fetch("/api/tests", {
+      const res = await fetch(`${API_BASE}/api/tests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
