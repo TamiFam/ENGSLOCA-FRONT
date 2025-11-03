@@ -21,6 +21,7 @@ function AddWeeker({
     return localStorage.getItem(`weekTestOn-${currentWeek}`) === 'true'
   });
   const [weekWords, setWeekWords] = useState([]);
+  const [testResults,setTestResults] = useState([])
   
   const API_BASE = "https://engsloca-back.onrender.com";
     // 👇 Функция загрузки слов недели
@@ -39,6 +40,7 @@ function AddWeeker({
     useEffect(() => {
       loadWeekWords(currentWeek);
     }, [currentWeek]); // ← ДОБАВЬ currentWeek В ЗАВИСИМОСТЬ
+
     useEffect(() => {
       // Сохраняем значение weekTestOn в localStorage
       localStorage.setItem(`weekTestOn-${currentWeek}`, weekTestOn);
@@ -119,6 +121,7 @@ function AddWeeker({
           // Проверяем, есть ли тест для текущей недели
           const weekTest = data.testResults.find(t => Number(t.week) === Number(currentWeek));
           if (weekTest && weekTest.score > 50) {
+            setTestResults(weekTest)
             setWeekTestOn(true);
             localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
           } else {
@@ -215,8 +218,9 @@ function AddWeeker({
                 <div>НЕДЕЛЬНЫЙ ТЕСТ</div>
                 <div className="text-xs font-normal">
                   {weekTestOn
-                    ? "✅ Пройден"
+                    ? `✅ Пройден на ${testResults.score} %`
                     : "❌ Требуется прохождение"}
+                          
                 </div>
               </button>
             </div>
