@@ -17,7 +17,7 @@ function AddWeeker({
 }) {
   const { user } = useAuth();
   const [porverkaWordsModal, setProverkaWordsModal] = useState(false);
-  const weekTestOn = useRef(false);
+  const [weekTestOn, setWeekTestOn] = useState(false);
   const [weekWords, setWeekWords] = useState([]);
   
 
@@ -101,19 +101,24 @@ function AddWeeker({
     setProverkaWordsModal(true);
   }, []);
 
-  // Внутри твоего компонента
+ 
 const handleTestComplete = async (results) => {
   console.log("Результаты теста:", results);
 
   const score = results.tolerantPercentage; 
-  weekTestOn.current = score > 50;
-
+  
+  if (score > 50) {
+    setWeekTestOn(true);
+  } else {
+    setWeekTestOn(false);
+    return; // если <= 50, тест не пройден
+  }
   try {
     const res = await fetch("/api/tests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId: currentUser._id,
+        userId: user._id,
         week: currentWeek,
         score,
       }),
@@ -151,7 +156,7 @@ const handleTestComplete = async (results) => {
             <div
               className={`px-4 py-3 font-black border-3 border-black flex items-center text-sm
     justify-center gap-2 transition-all duration-300 ${
-      weekTestOn.current
+      weekTestOn
         ? "bg-green-400 hover:bg-green-300"
         : "bg-red-400 hover:bg-red-300 "
     }`}
@@ -162,7 +167,7 @@ const handleTestComplete = async (results) => {
               >
                 <div>НЕДЕЛЬНЫЙ ТЕСТ</div>
                 <div className="text-xs font-normal">
-                  {weekTestOn.current
+                  {weekTestOn
                     ? "✅ Пройден"
                     : "❌ Требуется прохождение"}
                 </div>
@@ -170,7 +175,7 @@ const handleTestComplete = async (results) => {
             </div>
 
             {/* Подсказка при наведении */}
-            {!weekTestOn.current && (
+            {!weekTestOn && (
               <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                 Пройдите тест для активации
               </div>
