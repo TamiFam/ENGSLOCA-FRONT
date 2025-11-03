@@ -50,7 +50,7 @@ export default function WordList() {
 
   const { triggerParticipantsRefresh } = useAppEvents();
   const [allWordsHidden, setAllWordsHidden] = useState(false);
- 
+  const [totalWordsCount, setTotalWordsCount] = useState(0);
 
   
   
@@ -158,19 +158,23 @@ export default function WordList() {
     setLoading(true);
     try {
       const res = await fetchWords({ page, limit: 10, week: currentWeek });
+      console.log("📊 Ответ от API:", res.data);
 
       if (res.data && Array.isArray(res.data.words)) {
         setWords(res.data.words);
         setTotalPages(res.data.pages || 1);
+        setTotalWordsCount(res.data.total || 0);
       } else {
         setWords([]);
         setTotalPages(1);
+        setTotalWordsCount(0);
       }
     } catch (err) {
       // 🔥 ИГНОРИРУЕМ ОШИБКИ АВТОРИЗАЦИИ - ПОКАЗЫВАЕМ СЛОВА ВСЕМ
       console.log("Ошибка при загрузке слов:", err);
       setWords([]);
       setTotalPages(1);
+      setTotalWordsCount(0);
     } finally {
       setLoading(false);
     }
@@ -368,7 +372,7 @@ export default function WordList() {
     return (
       <AddWeeker
         currentWeek={currentWeek}
-        wordsCount={words.length}
+        wordsCount={totalWordsCount}
         showToast={showToast}
         setAuthModalOpen={setAuthModalOpen}
         setWordModalOpen={setWordModalOpen}
@@ -378,7 +382,7 @@ export default function WordList() {
         setAllWordsHidden={setAllWordsHidden}
       />
     );
-  }, [currentWeek, words.length, loading, allWordsHidden,]);
+  }, [currentWeek, loading, allWordsHidden,]);
 
   // ✅ Мемоизируем WeekSelector
   

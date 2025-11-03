@@ -7,6 +7,7 @@ export default function TestModal({
   currentWeek, 
   onTestComplete,
   
+  
 }) {
   const [isClosing, setIsClosing] = useState(false);
   const [testStage, setTestStage] = useState('config');
@@ -21,21 +22,7 @@ export default function TestModal({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [testResults, setTestResults] = useState(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsClosing(false);
-      document.body.style.overflow = 'hidden';
-      setTestConfig(prev => ({ ...prev, week: currentWeek || 1 }));
-      resetTest();
-      loadWeekWords(currentWeek || 1); // ← ПЕРЕДАЛ ПАРАМЕТР
-    } else {
-      document.body.style.overflow = 'unset';
-    }
 
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, currentWeek]);
 
   // 👇 Загружаем слова при изменении выбранной недели в настройках
   useEffect(() => {

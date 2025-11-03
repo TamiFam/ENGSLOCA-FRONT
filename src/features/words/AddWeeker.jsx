@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TestModal from "./TestModal";
 import { fetchAllWeekWords } from '../words/wordsAPI'
@@ -18,6 +18,25 @@ function AddWeeker({
   const { user } = useAuth();
   const [porverkaWordsModal, setProverkaWordsModal] = useState(false);
   const weekTestOn = useRef(false);
+  const [weekWords, setWeekWords] = useState([]);
+  
+
+    // 👇 Функция загрузки слов недели
+    const loadWeekWords = async (week) => {
+      
+      try {
+        const response = await fetchAllWeekWords(week);
+        setWeekWords(response.data.words || []);
+      } catch (error) {
+        console.error('Ошибка загрузки слов:', error);
+        setWeekWords([]);
+      } finally {
+        
+      }
+    };
+    useEffect(() => {
+      loadWeekWords(currentWeek);
+    }, [currentWeek]); // ← ДОБАВЬ currentWeek В ЗАВИСИМОСТЬ
 
   
 
@@ -81,6 +100,34 @@ function AddWeeker({
   const handleOpenTestModal = useCallback(() => {
     setProverkaWordsModal(true);
   }, []);
+
+  // Внутри твоего компонента
+const handleTestComplete = async (results) => {
+  console.log("Результаты теста:", results);
+
+  const score = results.tolerantPercentage; 
+  weekTestOn.current = score > 50;
+
+  try {
+    const res = await fetch("/api/tests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: currentUser._id,
+        week: currentWeek,
+        score,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    console.log("Результат успешно сохранён:", data.testResults);
+  } catch (err) {
+    console.error("Ошибка при сохранении результата:", err.message);
+  }
+};
+
 
   return (
     <div className="bg-white border-4 border-black p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 relative">
@@ -161,12 +208,10 @@ function AddWeeker({
         </div>
         <TestModal
           isOpen={porverkaWordsModal}
+        
           onClose={handleCloseTestModal}
           currentWeek={currentWeek}
-          onTestComplete={(results) => {
-            console.log("Результаты теста:", results);
-            weekTestOn.current = results.tolerantPercentage > 50 ? true : false;
-          }}
+          onTestComplete={handleTestComplete}
         />
       </div>
     </div>
