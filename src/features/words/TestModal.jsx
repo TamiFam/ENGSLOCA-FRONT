@@ -230,7 +230,7 @@ export default function TestModal({
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800">
             {testStage === 'config' && 'Настройка теста'}
-            {testStage === 'testing' && `Тест недели ${testConfig.week}`}
+            {testStage === 'testing' && `Тест недели ${currentWeek}`}
             {testStage === 'results' && 'Результаты теста'}
           </h2>
           <button
