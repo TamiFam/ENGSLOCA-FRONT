@@ -518,7 +518,7 @@ export default function WordList() {
 
           <div className="bg-white border-4 border-black inline-block px-4 sm:px-6 py-2 sm:py-3 -rotate-1 sm:-rotate-1 hover:rotate-0 transition-transform duration-300">
             <p className="text-base sm:text-xl font-bold text-gray-800">
-              Изучаем слова всем автодоком 🎯
+            Изучаем слова со  всем миром 🎯
             </p>
           </div>
 

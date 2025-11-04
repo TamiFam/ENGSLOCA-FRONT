@@ -22,7 +22,7 @@ export default function Home() {
         
         <div className="bg-white border-4 border-black inline-block px-4 sm:px-6 py-2 sm:py-3 -rotate-1 sm:-rotate-1 hover:rotate-0 transition-transform duration-300">
           <p className="text-base sm:text-xl font-bold text-gray-800">
-            Изучаем слова всем автодоком 🎯
+            Изучаем слова со  всем миром 🎯
           </p>
         </div>
       </div>
@@ -36,13 +36,13 @@ export default function Home() {
 
         <div className="text-center">
           <h2 className="text-2xl sm:text-3xl font-black text-black mb-4">
-            ДОБРО ПОЖАЛОВАТЬ В IZU4ALKA!
+            ДОБРО ПОЖАЛОВАТЬ В WEEK-worder!
           </h2>
           <p className="text-gray-600 mb-4 text-lg">
-            Тут мы будем изучать наши слова
+            Тут мы будем  добавлять и изучать интересные нам слова
           </p>
           <p className="text-gray-600 mb-4 text-lg">
-            Добавлять новые и редактировать старые
+            Каждую неделю обновлять их и проходить тесты для закрепления
           </p>
           
           <button
@@ -60,13 +60,13 @@ export default function Home() {
         <div className="bg-blue-100 border-4 border-black p-4 sm:p-6 text-center hover:rotate-1 transition-transform duration-300">
           <div className="text-3xl mb-3">🎯</div>
           <h3 className="font-black text-black mb-2">ЭФФЕКТИВНО</h3>
-          <p className="text-gray-700 text-sm">Систематическое изучение слов по неделям</p>
+          <p className="text-gray-700 text-sm">Систематическое изучение слов по неделям в компании друзей</p>
         </div>
         
         <div className="bg-green-100 border-4 border-black p-4 sm:p-6 text-center hover:-rotate-1 transition-transform duration-300">
           <div className="text-3xl mb-3">📈</div>
           <h3 className="font-black text-black mb-2">ПРОГРЕСС</h3>
-          <p className="text-gray-700 text-sm">Отслеживайте ваш прогресс в изучении</p>
+          <p className="text-gray-700 text-sm">Отслеживайте ваш прогресс в изучении и соревнуйтесь с друзьями</p>
         </div>
         
         <div className="bg-yellow-100 border-4 border-black p-4 sm:p-6 text-center hover:rotate-1 transition-transform duration-300">
