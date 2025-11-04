@@ -377,7 +377,7 @@ export default function WordList() {
         setAllWordsHidden={setAllWordsHidden}
       />
     );
-  }, [currentWeek, loading, allWordsHidden]);
+  }, [currentWeek, loading, allWordsHidden,]);
 
   // ✅ Мемоизируем WeekSelector
 

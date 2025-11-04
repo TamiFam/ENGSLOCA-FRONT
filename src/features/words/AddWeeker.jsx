@@ -105,6 +105,7 @@ function AddWeeker({
   const handleCloseTestModal = useCallback(() => {
     setProverkaWordsModal(false);
   }, []);
+  
   const handleOpenTestModal = useCallback(() => {
     setProverkaWordsModal(true);
   }, []);
@@ -156,7 +157,7 @@ function AddWeeker({
   
     const payload = {
       userId: user._id,
-      week: currentWeek,
+      week: testedWeek,
       score,
     };
   

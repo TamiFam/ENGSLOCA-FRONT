@@ -12,8 +12,8 @@ export default function TestModal({
   const [isClosing, setIsClosing] = useState(false);
   const [testStage, setTestStage] = useState('config');
   const [testConfig, setTestConfig] = useState({
-    week: currentWeek || 1,
-    wordsCount: 15,
+    week: currentWeek ,
+    wordsCount: 25,
   });
   const [weekWords, setWeekWords] = useState([]);
   const [loading, setLoading] = useState(false); // ← ДОБАВИЛ loading состояние
@@ -22,14 +22,15 @@ export default function TestModal({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [testResults, setTestResults] = useState(null);
 
-
-
-  // 👇 Загружаем слова при изменении выбранной недели в настройках
   useEffect(() => {
-    if (isOpen && testStage === 'config') {
-      loadWeekWords(testConfig.week);
+    if (isOpen) {
+      console.log("Открываем модалку, загружаем слова для недели:", currentWeek);
+      loadWeekWords(currentWeek);
+      resetTest(); // Сбрасываем тест при каждом открытии
     }
-  }, [testConfig.week, isOpen, testStage]);
+  }, [isOpen, currentWeek]); // ← Зависимость от isOpen и currentWeek
+
+
 
   // 👇 Функция загрузки слов недели
   const loadWeekWords = async (week) => {
@@ -80,7 +81,7 @@ export default function TestModal({
     
     const test = {
       id: Date.now(),
-      week: testConfig.week,
+      week: currentWeek,
       words: testWords,
       totalQuestions: testWords.length,
       createdAt: new Date().toISOString()
@@ -116,7 +117,8 @@ export default function TestModal({
       correct: 0,
       correctWithTolerance: 0, // правильные с допуском
       incorrect: 0,
-      details: []
+      details: [],
+      testedWeek: currentTest.week
     };
   
     currentTest.words.forEach(word => {
@@ -156,7 +158,7 @@ export default function TestModal({
   
     setTestResults(results);
     setTestStage('results');
-    onTestComplete?.(results);
+    onTestComplete?.(results,currentTest.week);
   };
   
   // Функция проверки с допуском одной ошибки
@@ -209,7 +211,7 @@ export default function TestModal({
     resetTest();
   };
 
-  const weeks = Array.from({ length: 10 }, (_, i) => i + 1);
+  
 
   if (!isOpen && !isClosing) return null;
 
@@ -228,9 +230,9 @@ export default function TestModal({
       >
         {/* Заголовок */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {testStage === 'config' && 'Настройка теста'}
-            {testStage === 'testing' && `Тест недели ${currentWeek}`}
+          <h2 className="text-2xl font-bold text-gray-800 ">
+            {testStage === 'config' && ''}
+            {testStage === 'testing' && `Тест недели ${testConfig.week}`}
             {testStage === 'results' && 'Результаты теста'}
           </h2>
           <button
@@ -245,56 +247,50 @@ export default function TestModal({
 
         {/* Контент */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-          {/* Этап настройки */}
-          {testStage === 'config' && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Выберите неделю для теста
-                </label>
-                <select
-                  value={testConfig.week}
-                  onChange={(e) => setTestConfig(prev => ({ 
-                    ...prev, 
-                    week: parseInt(e.target.value) 
-                  }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {weeks.map(week => (
-                    <option key={week} value={week}>
-                      Неделя {week} {week === currentWeek && "(текущая)"}
-                    </option>
-                  ))}
-                </select>
-              </div>
+  {testStage === 'config' && (
+    <div className="space-y-8">
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Количество слов в тесте
-                </label>
-                <select
-                  value={testConfig.wordsCount}
-                  onChange={(e) => setTestConfig(prev => ({ 
-                    ...prev, 
-                    wordsCount: parseInt(e.target.value) 
-                  }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {[25,50,75].map(num => (
-                    <option key={num} value={num}>
-                      {num} слов
-                    </option>
-                  ))}
-                </select>
+      {/* Отображение недели */}
+      <div className="flex justify-center">
+      <span className="inline-flex items-center px-5 py-2 rounded-full bg-blue-100 text-blue-800 text-xl font-semibold">
+  Неделя {currentWeek}
+  <span className="ml-2 bg-green-200 text-green-800 px-3 py-1 rounded-full text-base font-medium">
+    текущая
+  </span>
+</span>
+</div>
+
+
+      {/* Количество слов */}
+      <div>
+        <label className="block text-lg font-medium text-gray-700 mb-3 text-center">
+          Количество слов в тесте
+        </label>
+        <select
+          value={testConfig.wordsCount}
+          onChange={(e) =>
+            setTestConfig((prev) => ({
+              ...prev,
+              wordsCount: parseInt(e.target.value),
+            }))
+          }
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-lg"
+        >
+          {[25, 50, 75].map((num) => (
+            <option key={num} value={num}>
+              {num} слов
+            </option>
+          ))}
+        </select>
                 
                 {/* 👇 ОТОБРАЖАЕМ ИНДИКАТОР ЗАГРУЗКИ */}
                 {loading ? (
                   <p className="text-sm text-gray-500 mt-1">
-                    Загрузка слов недели {testConfig.week}...
+                    Загрузка слов недели {currentWeek}...
                   </p>
                 ) : (
                   <p className="text-sm text-gray-500 mt-1">
-                    Доступно слов в неделе {testConfig.week}: {weekWords.length}
+                    Доступно слов в неделе - {weekWords.length}
                   </p>
                 )}
               </div>
@@ -328,7 +324,7 @@ export default function TestModal({
                   Вопрос {currentQuestionIndex + 1} из {currentTest.totalQuestions}
                 </div>
                 <div className="text-sm text-gray-500">
-                  Неделя {testConfig.week}
+                  Неделя {currentWeek}
                 </div>
               </div>
 
