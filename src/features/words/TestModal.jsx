@@ -276,7 +276,7 @@ export default function TestModal({
           }
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-lg"
         >
-          {[25, 50, 75].map((num) => (
+          {[1,25, 50, 75].map((num) => (
             <option key={num} value={num}>
               {num} слов
             </option>

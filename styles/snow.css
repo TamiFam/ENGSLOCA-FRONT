@@ -1,0 +1,16 @@
+@keyframes snow-1 {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.3; }
+    100% { transform: translateY(100vh) translateX(50px) rotate(360deg); opacity: 0.1; }
+  }
+  @keyframes snow-2 {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.4; }
+    100% { transform: translateY(100vh) translateX(-80px) rotate(180deg); opacity: 0.2; }
+  }
+  @keyframes snow-3 {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.2; }
+    100% { transform: translateY(100vh) translateX(30px) rotate(270deg); opacity: 0.3; }
+  }
+  
+  .snow-type-1 { animation: snow-1 linear infinite; }
+  .snow-type-2 { animation: snow-2 linear infinite; }
+  .snow-type-3 { animation: snow-3 linear infinite; }

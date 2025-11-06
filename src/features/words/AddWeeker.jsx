@@ -219,7 +219,10 @@ function AddWeeker({
                 <div>НЕДЕЛЬНЫЙ ТЕСТ</div>
                 <div className="text-xs font-normal">
                   {weekTestOn
-                    ? `✅ Пройден на ${testResults.score} %`
+                    ? testResults.score
+                    ? `✅ Пройден на  ${testResults.score} %` 
+                    : ''
+                     
                     : "❌ Требуется прохождение"}
                           
                 </div>

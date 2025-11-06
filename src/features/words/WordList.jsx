@@ -19,6 +19,7 @@ import AddWeeker from "./AddWeeker";
 
 import WordsPageSwitcher from "./WordsPageSwitcher";
 import WordCard from "./WordCard";
+import '../../../styles/snow.css'; 
 
 export default function WordList() {
   const { user, logout } = useAuth();
@@ -423,6 +424,10 @@ export default function WordList() {
     ),
     [authModalOpen, authError]
   );
+  const getSnowflakeSymbol = () => {
+    const snowflakes = ['❄', '❅', '❆', '❉', '❊', '☃', '🌨', '⛄','🧊'];
+    return snowflakes[Math.floor(Math.random() * snowflakes.length)];
+  };
 
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
@@ -430,15 +435,71 @@ export default function WordList() {
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={closeToast} />
       )}
+      {/* СНЕЖИНКИ - ОТДЕЛЬНЫЙ БЛОК */}
+    <div className="fixed inset-0 pointer-events-none hidden md:block z-5">
+      {Array.from({ length: 60 }).map((_, index) => {
+        const snowType = `snow-type-${(index % 3) + 1}`;
+        const size = 20 + Math.random() * 10;
+        
+        return (
+          <div
+            key={index}
+            className={`absolute text-blue-500 opacity-60 ${snowType}`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${-5 - Math.random() * 10}%`,
+              fontSize: `${size}px`,
+              animationDelay: `${Math.random() * 20}s`,
+              animationDuration: `${8 + Math.random() * 15}s`,
+            }}
+          >
+            {getSnowflakeSymbol()}
+          </div>
+        );
+      })}
+    </div>
 
-      {/* Абстрактные геометрические фигуры - скрыты на мобильных */}
-      <div className="fixed inset-0 pointer-events-none hidden md:block">
-        <div className="absolute top-10 left-5 w-40 h-40 bg-red-100 rotate-45 -translate-x-20"></div>
-        <div className="absolute top-40 right-10 w-32 h-32 bg-blue-50 rounded-full translate-x-16"></div>
-        <div className="absolute bottom-20 left-20 w-24 h-24 bg-yellow-100 -rotate-12"></div>
-        <div className="absolute bottom-40 right-20 w-36 h-36 bg-green-50 rotate-45 translate-y-10"></div>
-        <div className="absolute top-1/2 left-1/4 w-20 h-20 bg-purple-100 -rotate-45"></div>
-      </div>
+{/* Абстрактные геометрические фигуры - скрыты на мобильных */}
+<div className="fixed inset-0 pointer-events-none hidden md:block z-10">
+ 
+  {/* Плавающие слова с анимацией */}
+  <div className="absolute top-14 left-10 text-3xl font-black text-gray-800 opacity-35 transform -rotate-12 animate-float-1 blur-[2px]">
+    {words[1]?.word}
+  </div>
+  <div className="absolute top-12 right-16 text-4xl font-black text-gray-800 opacity-35 transform rotate-6 animate-float-2 blur-[2px]">
+    {words[0]?.translation}
+  </div>
+  <div className="absolute bottom-28 left-20 text-3xl font-black text-gray-800 opacity-35 transform rotate-45 animate-float-3 blur-[2px]">
+    {words[2]?.word}
+  </div>
+  <div className="absolute bottom-36 right-24 text-4xl font-black text-gray-800 opacity-35 transform -rotate-45 animate-float-4 blur-[2px]">
+    {words[3]?.word}
+  </div>
+  <div className="absolute top-1/3 left-1/4 text-3xl font-black text-gray-800 opacity-35 transform rotate-12 animate-float-5 blur-[2px]">
+    {words[5]?.translation}
+  </div>
+  <div className="absolute top-2/3 right-1/4 text-4xl font-black text-gray-800 opacity-35 transform -rotate-8 animate-float-6 blur-[2px]">
+    {words[6]?.word}
+  </div>
+ 
+
+  {/* Дополнительные слова для большего заполнения */}
+  <div className="absolute top-40 left-1/2 text-3xl font-black text-gray-800 opacity-35 transform -rotate-3 animate-float-7 blur-[2px]">
+    {words[7]?.translation}
+  </div>
+  <div className="absolute bottom-10 right-1/3 text-4xl font-black text-gray-800 opacity-35 transform rotate-15 animate-float-8 blur-[2px]">
+    {words[8]?.word}
+  </div>
+  <div className="absolute top-1/4 right-8 text-2xl font-black text-gray-800 opacity-35 transform -rotate-20 animate-float-9 blur-[2px]">
+    {words[9]?.translation}
+  </div>
+  <div className="absolute bottom-44 left-1/4 text-3xl font-black text-gray-800 opacity-35 transform rotate-25 animate-float-10 blur-[2px]">
+    {words[10]?.word}
+  </div>
+</div>
+
+
+
 
       {/* Грубые линии-разделители */}
       <div className="fixed top-0 left-0 w-full h-1 bg-black"></div>
