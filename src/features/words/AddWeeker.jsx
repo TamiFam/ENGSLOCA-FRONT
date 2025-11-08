@@ -157,7 +157,7 @@ function AddWeeker({
   
     const payload = {
       userId: user._id,
-      week: testedWeek,
+      week: currentWeek,
       score,
     };
   
