@@ -149,6 +149,12 @@ function AddWeeker({
     }
   
     if (score > 50) {
+      const newTestResult = {
+        week: currentWeek,
+        score: score,
+        date: new Date().toISOString()
+      };
+      setTestResults(newTestResult)
       setWeekTestOn(true);
     } else {
       setWeekTestOn(false);
@@ -218,12 +224,10 @@ function AddWeeker({
               >
                 <div>НЕДЕЛЬНЫЙ ТЕСТ</div>
                 <div className="text-xs font-normal">
-                  {weekTestOn
-                    ? testResults.score
-                    ? `✅ Пройден на  ${testResults.score} %` 
-                    : ''
-                     
-                    : "❌ Требуется прохождение"}
+                  {weekTestOn && testResults?.score
+                    ? `✅ Пройден на ${testResults.score} %` 
+                    : "❌ Требуется прохождение"
+                    }
                           
                 </div>
               </button>
