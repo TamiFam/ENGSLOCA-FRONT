@@ -81,7 +81,7 @@ export default function ParticipantsSidebar() {
   const MobileCompactView = useMemo(() => (
     <div className="lg:hidden">
       <div 
-        className="bg-black text-white p-3 border-2 border-black flex items-center justify-between cursor-pointer"
+        className="bg-black text-white p-3 border-2 border-black flex items-center justify-between cursor-pointer transition-colors duration-300"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">
@@ -99,34 +99,36 @@ export default function ParticipantsSidebar() {
       </div>
 
       {isExpanded && (
-        <div className="bg-white border-x-2 border-b-2 border-black max-h-60 overflow-y-auto">
+        <div className="bg-white dark:bg-gray-800 border-x-2 border-b-2 border-black dark:border-gray-600 max-h-60 overflow-y-auto transition-colors duration-300">
           {participants.map((participant) => (
             <div
               key={participant.id}
-              className={`border-b border-gray-300 p-3 ${
-                participant.isOnline ? 'bg-green-50' : 'bg-white'
-              }`}
+              className={`border-b border-gray-300 dark:border-gray-600 p-3 ${
+                participant.isOnline ? 'bg-green-50 dark:bg-green-900' : 'bg-white dark:bg-gray-800'
+              } transition-colors duration-300`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full border-2 border-black ${
+                <div className={`w-3 h-3 rounded-full border-2 border-black dark:border-gray-400 ${
                   participant.isOnline ? 'bg-green-500' : 'bg-gray-400'
-                }`} />
+                } transition-colors duration-300`} />
                 
                 <span className="text-lg">
                   {getRoleSymbol(participant.role)}
                 </span>
                 
                 <div className="flex-1">
-                  <div className="font-bold text-sm">{participant.username}</div>
+                  <div className="font-bold text-sm text-black dark:text-white transition-colors duration-300">
+                    {participant.username}
+                  </div>
                   {!participant.isOnline && participant.lastSeen && (
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 transition-colors duration-300">
                       {getLastSeenText(participant.lastSeen)}
                     </div>
                   )}
                 </div>
                 
                 {participant.isOnline && (
-                  <span className="text-xs bg-black text-white px-2 py-1 font-bold rounded">
+                  <span className="text-xs bg-black dark:bg-gray-700 text-white px-2 py-1 font-bold rounded transition-colors duration-300">
                     ON
                   </span>
                 )}
@@ -138,101 +140,54 @@ export default function ParticipantsSidebar() {
     </div>
   ), [isExpanded, participants, stats.online, getRoleSymbol, getLastSeenText]);
 
-  const DesktopView = useMemo(() => (
-    <div className="hidden lg:block w-64 bg-white border-4 border-black relative">
-      <div className="bg-black text-white p-4 border-b-4 border-black">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-black">УЧАСТНИКИ</h3>
-          <button 
-            onClick={handleRefresh}
-            className="text-xs bg-white text-black px-2 py-1 font-bold rounded hover:bg-gray-200 transition-colors"
-            title="Обновить"
-          >
-            🔄
-          </button>
-        </div>
-      </div>
-
-      <div className="p-4">
-        {loading ? (
-          <div className="space-y-3">
-            {[...Array(3)].map((_, index) => (
-              <div key={index} className="border-2 border-gray-300 p-3 bg-gray-100 animate-pulse rounded">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                  <div className="w-6 h-3 bg-gray-400 rounded"></div>
-                  <div className="flex-1 h-3 bg-gray-400 rounded"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : participants.length === 0 ? (
-          <div className="text-center py-6 border-2 border-dashed border-gray-400 rounded">
-            <p className="text-gray-600 text-sm font-bold">ПУСТО</p>
-          </div>
-        ) : (
-          <div className="space-y-3 max-h-80 overflow-y-auto">
-            {participants.map((participant) => (
-              <div
-                key={participant.id}
-                className={`border-2 border-black p-3 rounded-lg ${
-                  participant.isOnline ? 'bg-green-50' : 'bg-white'
-                }`}
+  const CompactList = useMemo(() => (
+    <div className="hidden lg:block w-64">
+      <div className="bg-white dark:bg-gray-800 border-2 border-black dark:border-gray-600 rounded-lg transition-colors duration-300">
+        <div className="bg-black text-white p-3 border-b-2 border-black dark:border-gray-600">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-black">👥 УЧАСТНИКИ</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-green-500 text-white px-2 py-1 rounded font-bold">
+                {stats.online}
+              </span>
+              <button 
+                onClick={handleRefresh}
+                className="text-white hover:text-gray-300 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full border-2 border-black ${
-                    participant.isOnline ? 'bg-green-500' : 'bg-gray-400'
-                  }`} />
-                  
-                  <span className="text-lg" title={`Роль: ${participant.role}`}>
-                    {getRoleSymbol(participant.role)}
-                  </span>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm truncate">
-                      {participant.username}
-                    </div>
-                    {!participant.isOnline && participant.lastSeen && (
-                      <div className="text-xs text-gray-600 mt-1">
-                        Был: {getLastSeenText(participant.lastSeen)}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {participant.isOnline ? (
-                    <span className="text-xs bg-black text-white px-2 py-1 font-bold rounded">
-                      ON
-                    </span>
-                  ) : (
-                    <span 
-                      className="text-xs bg-gray-200 px-2 py-1 border border-black font-mono rounded"
-                      title={`Был: ${new Date(participant.lastSeen).toLocaleString()}`}
-                    >
-                      {getLastSeenText(participant.lastSeen)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+                ⟳
+              </button>
+            </div>
           </div>
-        )}
-      </div>
-
-      <div className="bg-gray-100 border-t-4 border-black p-3">
-        <div className="flex justify-between text-sm font-bold">
-          <span>ВСЕГО: {stats.total}</span>
-          <span className="text-green-600">
-            ONLINE: {stats.online}
-          </span>
+        </div>
+  
+        <div className="max-h-48 overflow-y-auto p-2">
+          {participants.slice(0, 8).map((participant) => (
+            <div key={participant.id} className="flex items-center gap-2 p-2 text-sm border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+              <div className={`w-2 h-2 rounded-full ${participant.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+              <span className="text-base">{getRoleSymbol(participant.role)}</span>
+              <span className="flex-1 truncate font-medium text-black dark:text-white">
+                {participant.username}
+              </span>
+              {!participant.isOnline && participant.lastSeen && (
+  <div className="text-xs text-gray-500 dark:text-gray-400">
+    {getLastSeenText(participant.lastSeen)}
+  </div>
+)}
+            </div>
+          ))}
+          {participants.length > 8 && (
+            <div className="text-center text-xs text-gray-500 dark:text-gray-400 p-2">
+              +{participants.length - 8} ещё
+            </div>
+          )}
         </div>
       </div>
     </div>
-  ), [participants, loading, stats.total, stats.online, handleRefresh, getRoleSymbol, getLastSeenText]);
-
+  ), [participants, stats, handleRefresh, getRoleSymbol,getLastSeenText]);
   return (
     <>
       {MobileCompactView}
-      {DesktopView}
+      {CompactList}
     </>
   );
 }

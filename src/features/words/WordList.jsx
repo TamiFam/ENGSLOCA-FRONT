@@ -20,9 +20,12 @@ import AddWeeker from "./AddWeeker";
 import WordsPageSwitcher from "./WordsPageSwitcher";
 import WordCard from "./WordCard";
 import '../../../styles/snow.css'; 
+import { useTheme } from "../../hooks/useTheme";
+import { Snowflakes } from "../../effect/snow/snowflakes";
 
 export default function WordList() {
   const { user, logout } = useAuth();
+  const {theme, toggleTheme} = useTheme()
   const [words, setWords] = useState([]);
   const [currentWeek, setCurrentWeek] = useState(() => {
     const saved = localStorage.getItem("currentWeek");
@@ -424,76 +427,65 @@ export default function WordList() {
     ),
     [authModalOpen, authError]
   );
-  const getSnowflakeSymbol = () => {
-    const snowflakes = ['❄', '❅', '❆', '❉', '❊', '☃', '🌨', '⛄','🧊'];
-    return snowflakes[Math.floor(Math.random() * snowflakes.length)];
-  };
+
 
   return (
-    <div className="min-h-screen bg-white relative overflow-x-hidden">
+    
+    <div className="min-h-screen bg-white dark:bg-black relative overflow-x-hidden ">
+        {/* Кнопка переключения темы */}
+        <button 
+        onClick={toggleTheme} 
+        className="m-2 text-sm px-3 py-1 rounded border transition w-24
+          border-black/20 dark:border-white/30
+          bg-white dark:bg-gray-800 
+          text-black dark:text-white
+          hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        {theme === 'dark' ? '🌞 Light' : '🌑 Dark'}
+      </button>
       {/* Toast уведомление */}
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={closeToast} />
       )}
-      {/* СНЕЖИНКИ - ОТДЕЛЬНЫЙ БЛОК */}
-    <div className="fixed inset-0 pointer-events-none hidden md:block z-5">
-      {Array.from({ length: 60 }).map((_, index) => {
-        const snowType = `snow-type-${(index % 3) + 1}`;
-        const size = 20 + Math.random() * 10;
-        
-        return (
-          <div
-            key={index}
-            className={`absolute text-blue-500 opacity-60 ${snowType}`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${-5 - Math.random() * 10}%`,
-              fontSize: `${size}px`,
-              animationDelay: `${Math.random() * 20}s`,
-              animationDuration: `${8 + Math.random() * 15}s`,
-            }}
-          >
-            {getSnowflakeSymbol()}
-          </div>
-        );
-      })}
-    </div>
+      
+      {/* СНЕЖИНКИ */}
+   <Snowflakes/>
 
 {/* Абстрактные геометрические фигуры - скрыты на мобильных */}
 <div className="fixed inset-0 pointer-events-none hidden md:block z-10">
  
   {/* Плавающие слова с анимацией */}
-  <div className="absolute top-14 left-10 text-3xl font-black text-gray-800 opacity-35 transform -rotate-12 animate-float-1 blur-[2px]">
+  <div className="absolute top-14 left-10 text-3xl font-black  dark:text-white  text-gray-800 opacity-35 transform -rotate-12 animate-float-1 blur-[3px]">
     {words[1]?.word}
   </div>
-  <div className="absolute top-12 right-16 text-4xl font-black text-gray-800 opacity-35 transform rotate-6 animate-float-2 blur-[2px]">
+  <div className="absolute top-12 right-16 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-6 animate-float-2 blur-[3px]">
     {words[0]?.translation}
   </div>
-  <div className="absolute bottom-28 left-20 text-3xl font-black text-gray-800 opacity-35 transform rotate-45 animate-float-3 blur-[2px]">
+  <div className="absolute bottom-28 left-20 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-45 animate-float-3 blur-[2px]">
     {words[2]?.word}
   </div>
-  <div className="absolute bottom-36 right-24 text-4xl font-black text-gray-800 opacity-35 transform -rotate-45 animate-float-4 blur-[2px]">
+  <div className="absolute bottom-36 right-24 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-45 animate-float-4 blur-[3px]">
     {words[3]?.word}
   </div>
-  <div className="absolute top-1/3 left-1/4 text-3xl font-black text-gray-800 opacity-35 transform rotate-12 animate-float-5 blur-[2px]">
+  <div className="absolute top-1/3 left-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-12 animate-float-5 blur-[2px]">
     {words[5]?.translation}
   </div>
-  <div className="absolute top-2/3 right-1/4 text-4xl font-black text-gray-800 opacity-35 transform -rotate-8 animate-float-6 blur-[2px]">
+  <div className="absolute top-2/3 right-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform -rotate-8 animate-float-6 blur-[3px]">
     {words[6]?.word}
   </div>
  
 
   {/* Дополнительные слова для большего заполнения */}
-  <div className="absolute top-40 left-1/2 text-3xl font-black text-gray-800 opacity-35 transform -rotate-3 animate-float-7 blur-[2px]">
+  <div className="absolute top-40 left-1/2 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-3 animate-float-7 blur-[3px]">
     {words[7]?.translation}
   </div>
-  <div className="absolute bottom-10 right-1/3 text-4xl font-black text-gray-800 opacity-35 transform rotate-15 animate-float-8 blur-[2px]">
+  <div className="absolute bottom-10 right-1/3 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-15 animate-float-8 blur-[3px]">
     {words[8]?.word}
   </div>
-  <div className="absolute top-1/4 right-8 text-2xl font-black text-gray-800 opacity-35 transform -rotate-20 animate-float-9 blur-[2px]">
+  <div className="absolute top-1/4 right-8 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-20 animate-float-9 blur-[3px]">
     {words[9]?.translation}
   </div>
-  <div className="absolute bottom-44 left-1/4 text-3xl font-black text-gray-800 opacity-35 transform rotate-25 animate-float-10 blur-[2px]">
+  <div className="absolute bottom-44 left-1/4 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-25 animate-float-10 blur-[3px]">
     {words[10]?.word}
   </div>
 </div>
@@ -522,22 +514,22 @@ export default function WordList() {
 
       {/* Мобильное меню контент */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-white z-40 p-6 md:hidden">
-          <div className="pt-16">
+        <div className="fixed inset-0 bg-white z-40 p-6 md:hidden ">
+          <div className="pt-16 ">
             {user ? (
-              <div className="space-y-4 mb-8">
-                <div className="bg-green-200 border-2 border-black px-4 py-3 text-base font-bold">
+              <div className="space-y-4 mb-8 ">
+                <div className="bg-green-200 border-2 border-black  px-4 py-3 text-base font-bold ">
                   ✅ {user.username}
                 </div>
                 <button
                   onClick={logout}
-                  className="bg-red-200 border-2 border-black px-4 py-3 text-base font-bold hover:bg-red-300 transition-colors duration-200 w-full"
+                  className="bg-red-200 border-2 border-black px-4 py-3 text-base font-bold hover:bg-red-300 transition-colors duration-200 w-full "
                 >
                   🚪 Выйти
                 </button>
               </div>
             ) : (
-              <div className="bg-yellow-200  border-2 border-black px-4 py-2 text-sm font-bold mb-4 mt-4 flex justify-center">                
+              <div className="bg-yellow-200   border-2 border-black px-4 py-2 text-sm font-bold mb-4 mt-4 flex justify-center">                
                 <button onClick={() => setAuthModalOpen(true)}>
                   🔒 Требуется авторизация
                 </button>
@@ -569,7 +561,8 @@ export default function WordList() {
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Хедер*/}
         <div className="text-center mb-8 sm:mb-16">
-          <div className="inline-block bg-yellow-300 border-4 border-black px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 rotate-1 sm:rotate-2 hover:rotate-0 transition-transform duration-300">
+          <div className="inline-block bg-yellow-300 dark:bg-blue-300 border-4 border-black  px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 rotate-1 sm:rotate-2 hover:rotate-0 transition-transform
+           duration-300">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight leading-tight">
               ENGLISH
               <br />
@@ -577,7 +570,7 @@ export default function WordList() {
             </h1>
           </div>
 
-          <div className="bg-white border-4 border-black inline-block px-4 sm:px-6 py-2 sm:py-3 -rotate-1 sm:-rotate-1 hover:rotate-0 transition-transform duration-300">
+          <div className="bg-white border-4 border-black dark:bg-blue-100 inline-block px-4 sm:px-6 py-2 sm:py-3 -rotate-1 sm:-rotate-1 hover:rotate-0 transition-transform duration-300">
             <p className="text-base sm:text-xl font-bold text-gray-800">
             Изучаем слова со  всем миром 🎯
             </p>
@@ -586,8 +579,8 @@ export default function WordList() {
           {/* Десктопная версия пользовательской информации */}
           <div className="hidden md:block">
             {user ? (
-              <div className="flex items-center justify-center gap-4 mt-6 sm:mt-8">
-                <div className="bg-green-200 border-2 border-black px-4 py-2 text-sm font-bold">
+              <div className="flex items-center justify-center gap-4 mt-6 sm:mt-8 " >
+                <div className="bg-green-200 border-2 border-black px-4 py-2 text-sm font-bold ">
                   ✅ {user.username}
                 </div>
                 <button
@@ -635,7 +628,7 @@ export default function WordList() {
             </div>
           </div>
         ) : words.length === 0 ? (
-          <div className="bg-white border-4 border-black p-8 sm:p-12 lg:p-16 text-center relative">
+          <div className="bg-white dark:bg-gray-800 border-4 border-black p-8 sm:p-12 lg:p-16 text-center relative">
             <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🔄</div>
             <h3 className="text-xl sm:text-2xl font-black text-black mb-3 sm:mb-4">
               {currentWeek === 1 ? "ПУСТОТА" : `WEEK ${currentWeek} EMPTY`}

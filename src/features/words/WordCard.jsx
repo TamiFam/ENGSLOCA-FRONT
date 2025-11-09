@@ -19,20 +19,21 @@ const WordCard = React.memo(({
 
   return (
     <div
-      className={`bg-white border-4 border-black p-4 sm:p-6 lg:p-8 hover:shadow-[4px_4px_0_0_#000] sm:hover:shadow-[8px_8px_0_0_#000] transition-all duration-300 group relative ${
+      className={`bg-white border-4 border-black dark:bg-gray-900 dark:border-gray-600 p-4 sm:p-6 lg:p-8 hover:shadow-[4px_4px_0_0_#000] sm:hover:shadow-[8px_8px_0_0_#000] transition-all duration-300 group relative ${
         index % 2 === 0
           ? "sm:rotate-1 hover:rotate-0"
           : "sm:-rotate-1 hover:rotate-0"
       }`}
     >
       {/* Номер карточки */}
-      <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-6 h-6 sm:w-8 sm:h-8 bg-black text-white flex items-center justify-center text-xs sm:text-sm font-bold">
+      <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-6 h-6 sm:w-8 sm:h-8 bg-black dark:bg-gray-700  text-white flex items-center 
+      justify-center text-xl sm:text-sm font-bold">
         {index + 1}
       </div>
 
       {/* Блок автора - добавляем в верхний правый угол */}
       {word.author && (
-        <div className=" absolute -top-2 -right-2 sm:-top-3 sm:-right-3">
+        <div className=" absolute -top-2 -right-2 sm:-top-3 sm:-right-3 ">
           <div className={`flex items-center gap-1 px-2 py-1 rounded-full border-2 border-black text-xs font-bold  ${
             isAuthor 
               ? 'bg-green-100 text-green-800' 
@@ -42,7 +43,7 @@ const WordCard = React.memo(({
           }`}>
             <span className="text-xs">✍️</span>
             
-            <span>{word.author.username}</span>
+            <span className=''>{word.author.username}</span>
             
               {/* <span className="ml-1 text-xl">★</span> */}
             
@@ -56,7 +57,7 @@ const WordCard = React.memo(({
             <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4 sm:mb-6">
               <div className="flex items-center gap-2">
                 <span
-                  className={`text-2xl sm:text-3xl lg:text-3xl font-black wrap-break-word transition-all duration-500 ${
+                  className={`text-2xl sm:text-3xl lg:text-3xl font-black wrap-break-word dark:text-white transition-all duration-500 ${
                     allWordsHidden
                       ? "filter blur-[5px] opacity-70 backdrop-blur-sm bg-white/20 rounded-lg px-2"
                       : "filter blur-0 text-black"
@@ -88,7 +89,7 @@ const WordCard = React.memo(({
               </div>
 
               <span
-                className={`text-sm sm:text-lg text-gray-600 font-mono bg-gray-100 px-2 py-1 self-start ${
+                className={`text-sm sm:text-lg text-gray-700 font-mono bg-gray-100 dark:bg-gray-900 px-2 py-1 self-start ${
                   allWordsHidden
                     ? "filter blur-[5px] text-gray-400"
                     : "filter blur-0 text-black"
@@ -97,9 +98,9 @@ const WordCard = React.memo(({
                 [{word.transcriptionUK}]
               </span>
 
-              <span className="hidden sm:inline text-2xl text-gray-400">—</span>
+              <span className="hidden sm:inline text-2xl text-gray-300">—</span>
 
-              <span className="text-xl sm:text-2xl font-bold text-gray-800 wrap-break-words">
+              <span className="text-xl sm:text-2xl font-bold text-gray-800 wrap-break-words dark:text-gray-200">
                 {word.translation}
               </span>
             </div>
