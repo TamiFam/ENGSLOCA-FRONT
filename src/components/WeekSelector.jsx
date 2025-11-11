@@ -107,7 +107,7 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
       <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-black dark:bg-gray-600 transition-colors duration-300"></div>
       <div className="absolute -bottom-2 -right-2 w-3 h-3 bg-black dark:bg-gray-600 transition-colors duration-300"></div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 ">
         {/* Заголовок */}
         <div className="flex justify-between items-center flex-wrap gap-3">
           <span className="text-base sm:text-lg font-black text-black dark:text-white whitespace-nowrap transition-colors duration-300">
@@ -120,12 +120,12 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
         </div>
 
         {/* Пагинация недель */}
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 ">
           {weekRange.map((w, i) =>
             w === "..." ? (
               <span
                 key={`dots-${i}`}
-                className="px-3 py-2 text-gray-400 dark:text-gray-500 font-black select-none border-2 border-transparent transition-colors duration-300"
+                className="px-3 py-2 text-gray-400 dark:text-white  font-black select-none border-2 border-transparent transition-colors duration-300 "
               >
                 …
               </span>

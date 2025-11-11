@@ -1,11 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet');
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+/* Подключение шрифтов с Google Fonts */
+/* 3️⃣ Глобальные стили через Tailwind base layer */
+@layer base {
+  /* body {
+    @apply font-sans bg-white text-black dark:bg-black dark:text-white;
+    margin: 0;
+  } */
 
+  code, pre {
+    @apply font-mono;
+  }
+}
 /* Шрифты */
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
-  background-color: white;
+  /* background-color: white; */
   color: black;
 }
 

@@ -433,16 +433,27 @@ export default function WordList() {
     
     <div className="min-h-screen bg-white dark:bg-black relative overflow-x-hidden ">
         {/* Кнопка переключения темы */}
-        <button 
-        onClick={toggleTheme} 
-        className="m-2 text-sm px-3 py-1 rounded border transition w-24
-          border-black/20 dark:border-white/30
-          bg-white dark:bg-gray-800 
-          text-black dark:text-white
-          hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        {theme === 'dark' ? '🌞 Light' : '🌑 Dark'}
-      </button>
+        <style>
+{`
+  @keyframes themeSwitch {
+    0% { transform: scale(0.8) rotate(0deg); opacity: 0.5; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+    100% { transform: scale(1) rotate(360deg); opacity: 1; }
+  }
+`}
+</style>
+
+<button
+  onClick={toggleTheme}
+  className="p-2 rounded-full m-2 bg-white dark:bg-black relative overflow-hidden"
+>
+  <span 
+    key={theme}
+    className="text-3xl inline-block animate-[themeSwitch_0.6s_ease-in-out]"
+  >
+    {theme === 'dark' ? '🌙' : '☀️'}
+  </span>
+</button>
       {/* Toast уведомление */}
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={closeToast} />
@@ -614,8 +625,8 @@ export default function WordList() {
 
         {/* Список слов с адаптивным дизайном */}
         {loading ? (
-          <div className="bg-white border-4 border-black p-8 sm:p-12 text-center">
-            <div className="flex justify-center space-x-2">
+          <div className="bg-white border-4 border-black p-8 sm:p-12 text-center dark:bg-gray-700 ">
+            <div className="flex justify-center space-x-2 ">
               <div className="w-3 h-3 bg-black animate-bounce"></div>
               <div
                 className="w-3 h-3 bg-black animate-bounce"

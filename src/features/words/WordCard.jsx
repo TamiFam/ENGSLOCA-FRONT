@@ -89,7 +89,7 @@ const WordCard = React.memo(({
               </div>
 
               <span
-                className={`text-sm sm:text-lg text-gray-700 font-mono bg-gray-100 dark:bg-gray-900 px-2 py-1 self-start ${
+                className={`text-lg sm:text-lg text-gray-500 font-mono bg-gray-100 dark:bg-gray-900 px-2 py-1 self-start ${
                   allWordsHidden
                     ? "filter blur-[5px] text-gray-400"
                     : "filter blur-0 text-black"
