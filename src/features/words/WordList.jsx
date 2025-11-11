@@ -516,7 +516,7 @@ export default function WordList() {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="bg-gray-200 text-gray-800 w-9 h-9 flex items-center justify-center rounded-xl shadow-xl hover:shadow-xl 
-          transition-all duration-300 border border-gray-300 hover:bg-gray-200"
+          transition-all duration-300 border border-gray-300 dark:border-gray-400 hover:bg-gray-200 dark:bg-gray-500"
           >
             {mobileMenuOpen ? "✕" : "☰"}
           </button>
@@ -525,7 +525,7 @@ export default function WordList() {
 
       {/* Мобильное меню контент */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-white z-40 p-6 md:hidden ">
+        <div className="fixed inset-0 bg-white z-40 p-6 md:hidden dark:bg-black  ">
           <div className="pt-16 ">
             {user ? (
               <div className="space-y-4 mb-8 ">
@@ -554,7 +554,7 @@ export default function WordList() {
 
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="bg-black text-white border-2 border-black px-6 py-3 font-bold w-full mt-8"
+              className=" text-black dark:text-white border-2 dark:bg-gray-800 dark:border-gray-400 border-black px-6 py-3 font-bold w-full mt-8"
             >
               Закрыть
             </button>
@@ -564,7 +564,7 @@ export default function WordList() {
 
       {/* Участники в стиле пост-интернет - скрыты на мобильных */}
       <div className="fixed top-27 left-8 z-50 hidden md:block">
-        <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:translate-x-1 hover:translate-y-1 transition-all duration-200">
+        <div className="bg-white border-4  border-black shadow-[8px_8px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:translate-x-1 hover:translate-y-1 transition-all duration-200">
           <ParticipantsSidebar />
         </div>
       </div>

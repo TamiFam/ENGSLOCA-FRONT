@@ -79,20 +79,20 @@ export default function ParticipantsSidebar() {
 
   // Мемоизируем представления
   const MobileCompactView = useMemo(() => (
-    <div className="lg:hidden">
+    <div className="lg:hidden text-black  border-2 dark:bg-gray-800">
       <div 
-        className="bg-black text-white p-3 border-2 border-black flex items-center justify-between cursor-pointer transition-colors duration-300"
+        className=" text-black dark:text-white p-3 border-2 border-black flex items-center justify-between cursor-pointer transition-colors duration-300 "
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2  ">
           <span className="text-sm font-black">👥</span>
-          <span className="text-sm font-black">УЧАСТНИКИ</span>
+          <span className="text-sm font-black ">УЧАСТНИКИ</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs bg-green-500 text-white px-1 font-bold">
             {stats.online}
           </span>
-          <span className="text-white text-sm">
+          <span className="text-black dark:text-white text-sm ">
             {isExpanded ? '▲' : '▼'}
           </span>
         </div>
