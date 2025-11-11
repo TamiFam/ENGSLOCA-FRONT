@@ -114,7 +114,8 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
             📅 НЕДЕЛЯ:
           </span>
 
-          <span className="inline-flex items-center px-3 py-1 text-sm font-black bg-black dark:bg-gray-700 text-white dark:text-gray-200 border-2 border-black dark:border-gray-600 transition-colors duration-300">
+          <span className="inline-flex items-center px-3 py-1 text-sm font-black bg-black dark:bg-gray-900 text-white dark:text-gray-200 border-2 border-black
+           dark:border-gray-600 transition-colors duration-300">
             ВСЕГО: {weeks.length}
           </span>
         </div>
@@ -136,8 +137,8 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
                 className={`px-4 py-2 border-2 font-black text-sm sm:text-base transition-all duration-200
                   ${
                     w === currentWeek
-                      ? "bg-black dark:bg-gray-700 text-white dark:text-gray-200 border-black dark:border-gray-600"
-                      : "bg-white dark:bg-gray-800 text-black dark:text-white border-black dark:border-gray-600 hover:bg-black dark:hover:bg-gray-600 hover:text-white dark:hover:text-gray-200"
+                      ? "bg-black dark:bg-black text-white dark:text-white border-black border-2 dark:border-gray-700"
+                      : "bg-white dark:bg-white text-black dark:text-black border-black border-2 dark:border-gray-700 hover:bg-black dark:hover:bg-black hover:text-white dark:hover:text-gray-200"
                   } transition-colors duration-300`}
               >
                 {w}
@@ -151,7 +152,7 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
           {!showAddForm ? (
             <button
               onClick={() => setShowAddForm(true)}
-              className="bg-black dark:bg-gray-700 text-white dark:text-gray-200 px-4 py-2 font-black border-2 border-black dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm sm:text-base"
+              className="bg-black dark:bg-gray-900 text-white dark:text-gray-200 px-4 py-2 font-black border-2 border-black dark:border-gray-600 hover:bg-white dark:hover:bg-gray-800 hover:text-black dark:hover:text-white transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto text-sm sm:text-base"
             >
               <span className="text-lg">+</span>
               ДОБАВИТЬ НЕДЕЛЮ
