@@ -555,26 +555,26 @@ export default function TestModal({
                 </div>
 
                 <input
-                  type="password"
-                  value={
-                    userAnswers[currentTest.words[currentQuestionIndex]._id] ||
-                    ""
-                  }
-                  onChange={(e) =>
-                    handleAnswer(
-                      currentTest.words[currentQuestionIndex]._id,
-                      e.target.value
-                    )
-                  }
-                  inputMode="text"
-                  placeholder="Введите перевод..."
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border-2 border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-base sm:text-lg bg-gray-800 text-white placeholder-gray-500"
-                  autoFocus
-                />
+  type="text"
+  value={
+    userAnswers[currentTest.words[currentQuestionIndex]._id] || ""
+  }
+  onChange={(e) =>
+    handleAnswer(
+      currentTest.words[currentQuestionIndex]._id,
+      e.target.value
+    )
+  }
+  inputMode="text"
+  placeholder="Введите перевод..."
+  autoComplete="new-password"  // Специальное значение для полного отключения
+  autoCorrect="off"
+  autoCapitalize="off"
+  spellCheck={false}
+  list="autocompleteOff"  // Блокирует выпадающие подсказки
+  className="w-full px-3 py-2 sm:px-4 sm:py-3 border-2 border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-base sm:text-lg bg-gray-800 text-white placeholder-gray-500"
+  autoFocus
+/>
               </div>
 
               <div className="flex justify-between gap-2">
