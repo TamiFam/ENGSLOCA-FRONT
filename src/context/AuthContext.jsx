@@ -10,25 +10,32 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    
-      getMe()
-        .then(res => setUser(res.data))
-        .catch(() => {
-          setUser(null);
-          
-          // localStorage.removeItem("token");
-        })
-        .finally(() => setLoading(false));
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const res = await getMe();
+      console.log("✅ User authenticated:", res.data); // для отладки
+      setUser(res.data);
+    } catch (err) {
+      console.log("❌ Not authenticated:", err.message); // для отладки
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
   
 
   const login =  async (credentials) => {
     try {
       const res = await loginUser(credentials);
       setUser(res.data.user);
+      await checkAuth();
     } catch (err) {
       console.error("Login error", err);
       setUser(null);
+      throw err
     }
   };
 
