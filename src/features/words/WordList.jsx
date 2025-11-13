@@ -511,7 +511,7 @@ export default function WordList() {
       <div className="fixed top-0 right-0 w-1 h-full bg-black"></div>
 
       {/* Мобильное меню */}
-      {wordModalOpen === true ? null : (
+      {wordModalOpen === true  ? null : (
         <div className="fixed top-4 right-4 z-50 md:hidden">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
