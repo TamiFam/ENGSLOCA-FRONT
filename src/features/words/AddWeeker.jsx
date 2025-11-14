@@ -118,23 +118,29 @@ function AddWeeker({
   const handleTestComplete = async (results) => {
     console.log("Результаты теста:", results);
   
-    const score = results.tolerantPercentage;
+    const score = results.tolerantPercentage || Math.round((results.correctWithTolerance / results.total) * 100);
     
     if (!user?._id) {
       console.error("Пользователь не найден, результат не будет сохранён");
       return;
     }
   
+    // Создаем объект с результатами ДО проверки условия
+    const newTestResult = {
+      week: currentWeek,
+      score: score,
+      date: new Date().toISOString()
+    };
+  
+    // Сохраняем результаты в состояние независимо от score
+    setTestResults(newTestResult);
+  
     if (score > 50) {
-      const newTestResult = {
-        week: currentWeek,
-        score: score,
-        date: new Date().toISOString()
-      };
-      setTestResults(newTestResult)
       setWeekTestOn(true);
+      localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
     } else {
       setWeekTestOn(false);
+      localStorage.removeItem(`weekTestOn-${currentWeek}`);
       return; // если <= 50, тест не пройден
     }
   
@@ -161,8 +167,15 @@ function AddWeeker({
       }
   
       console.log("Результат успешно сохранён:", data.testResults);
+      
+      // Обновляем состояние после успешного сохранения на сервере
+      setTestResults(newTestResult);
+      
     } catch (err) {
       console.error("Ошибка при сохранении результата:", err.message);
+      // Откатываем состояние если сохранение не удалось
+      setWeekTestOn(false);
+      localStorage.removeItem(`weekTestOn-${currentWeek}`);
     }
   };
   
@@ -188,7 +201,7 @@ function AddWeeker({
 
           <div className="relative">
             <div
-              className={`px-4 py-3 font-black border-3 border-black dark:bg-gray-400 flex items-center text-sm justify-center gap-2 transition-all duration-300 ${
+              className={`px-4 py-4 font-black border-3 border-black dark:bg-gray-400 flex items-center text-sm justify-center gap-2 transition-all duration-300 ${
                 weekTestOn
                   ? "bg-green-400 hover:bg-green-300 dark:bg-green-300 dark:hover:bg-green-400"
                   : "bg-red-400 hover:bg-red-300 dark:bg-red-300 dark:hover:bg-red-400"
@@ -219,21 +232,21 @@ function AddWeeker({
           {/* Кнопка скрытия всех слов */}
           <button
             onClick={toggleAllWordsVisibility}
-            className={`px-4 py-3 font-black border-4 border-black dark:bg-gray-300 flex items-center justify-center transition-all duration-200 text-sm min-w-[200px] ${
+            className={`px-4 py-4 font-black border-4 border-black dark:bg-gray-300 flex items-center justify-center transition-all  duration-200 text-sm  min-w-[200px] ${
               allWordsHidden
                 ? "bg-green-200 text-black hover:bg-green-300 dark:bg-green-300"
                 : "bg-gray-200 text-black  dark:bg-gray-300"
             }`}
             title={allWordsHidden ? "Показать все слова" : "Скрыть все слова"}
           >
-            <div className="text-center whitespace-nowrap">
+            <div className="text-center whitespace-nowrap  ">
               {allWordsHidden ? "РЕЖИМ ОБУЧЕНИЯ ✅" : "РЕЖИМ ОБУЧЕНИЯ ❌"}
             </div>
           </button>
 
           {/* Кнопка добавления слова */}
           <button
-            className={`px-4 sm:px-5 lg:px-5 py-3 font-bold text-sm sm:text-base border-4 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 flex-1 ${
+            className={`px-4 py-4 font-bold text-sm sm:text-base border-4 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 flex-1 ${
               canAdd
                 ? "bg-green-400 text-black border-black hover:bg-green-200 dark:hover:bg-green-400 transition-colors duration-300 dark:bg-green-300"
                 : "bg-gray-600 text-gray-200 border-gray-400 cursor-not-allowed transition-colors duration-300"
