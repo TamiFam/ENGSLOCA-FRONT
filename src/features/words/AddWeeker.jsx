@@ -135,13 +135,7 @@ function AddWeeker({
     // Сохраняем результаты в состояние независимо от score
     setTestResults(newTestResult);
   
-   // Если результат <= 50%, тест не пройден
-   if (score <= 50) {
-    setWeekTestOn(false);
-    localStorage.removeItem(`weekTestOn-${currentWeek}`);
-    showToast(`Тест не пройден. Набрано ${score}% из 50%`, "warning");
-    return;
-  }
+   
   
     const payload = {
       userId: user._id,
@@ -166,6 +160,14 @@ function AddWeeker({
       }
   
       console.log("Результат успешно сохранён:", data.testResults);
+
+      // Если результат <= 50%, тест не пройден
+   if (score <= 50) {
+    setWeekTestOn(false);
+    localStorage.removeItem(`weekTestOn-${currentWeek}`);
+    showToast(`Тест не пройден. Набрано ${score}% из 50%`, "warning");
+    return;
+  }
       
       if (data.updated) {
         // Результат был обновлен (новый результат лучше)
