@@ -11,11 +11,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    e.stopPropagation(); // 🔥 ДОБАВИЛ: предотвращаем всплытие
+    e.stopPropagation();
     
     setLoading(true);
     setFormError("");
-
+  
     try {
       let response;
       if (isLogin) {
@@ -24,8 +24,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, error }) {
         response = await apiRegister(formData);
       }
       
-      // Сохраняем токен и пользователя
-      authLogin(response.data.token, response.data.user);
+      // 👇 ИСПРАВЛЕНИЕ: передаем ТОЛЬКО credentials
+      await authLogin(formData); // 👈 ПРАВИЛЬНО
       
       // Закрываем модалку и вызываем успех
       setFormData({ username: "", password: "" });

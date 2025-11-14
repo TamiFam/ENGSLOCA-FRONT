@@ -11,15 +11,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('🔐 Login attempt:', { username, password }); // 🔥 ДОБАВИЛ лог
     
     try {
-      const res = await loginUser({ username, password }); // 🔥 ИЗМЕНИЛ: email → username
-      console.log('✅ Login success:', res.data);
+      // 👇 ТОЛЬКО login из контекста
       await login({ username, password });
-      navigate("/");
+      window.location.href = "/";
     } catch (err) {
-      console.error('❌ Login error:', err);
       alert("Ошибка входа: " + (err.response?.data?.message || err.message));
     }
   };
