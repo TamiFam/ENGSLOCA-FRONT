@@ -135,14 +135,13 @@ function AddWeeker({
     // Сохраняем результаты в состояние независимо от score
     setTestResults(newTestResult);
   
-    if (score > 50) {
-      setWeekTestOn(true);
-      localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
-    } else {
-      setWeekTestOn(false);
-      localStorage.removeItem(`weekTestOn-${currentWeek}`);
-      return; // если <= 50, тест не пройден
-    }
+   // Если результат <= 50%, тест не пройден
+   if (score <= 50) {
+    setWeekTestOn(false);
+    localStorage.removeItem(`weekTestOn-${currentWeek}`);
+    showToast(`Тест не пройден. Набрано ${score}% из 50%`, "warning");
+    return;
+  }
   
     const payload = {
       userId: user._id,
@@ -168,9 +167,23 @@ function AddWeeker({
   
       console.log("Результат успешно сохранён:", data.testResults);
       
-      // Обновляем состояние после успешного сохранения на сервере
-      setTestResults(newTestResult);
-      
+      if (data.updated) {
+        // Результат был обновлен (новый результат лучше)
+        setTestResults(newTestResult);
+        setWeekTestOn(true);
+        localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
+        showToast(`Тест пройден! Новый результат: ${score}%`, "success");
+      } else {
+        // Результат не был обновлен (предыдущий результат лучше)
+        showToast(`Тест пройден, но предыдущий результат был лучше (${testResults?.score}%)`, "info");
+        // Можно опционально обновить состояние из ответа сервера
+        if (data.testResults) {
+          const currentWeekResult = data.testResults.find(t => Number(t.week) === Number(currentWeek));
+          if (currentWeekResult) {
+            setTestResults(currentWeekResult);
+          }
+        }
+      }
     } catch (err) {
       console.error("Ошибка при сохранении результата:", err.message);
       // Откатываем состояние если сохранение не удалось
