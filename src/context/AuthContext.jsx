@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await loginUser(credentials);
       setUser(res.data.user);
-      await checkAuth();
+      // await checkAuth();
     } catch (err) {
       console.error("Login error", err);
       setUser(null);

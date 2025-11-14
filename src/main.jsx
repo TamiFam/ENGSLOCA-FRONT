@@ -8,7 +8,7 @@ import { ThemeProvider } from "./hooks/ThemeProvider";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <ThemeProvider>
     <AuthProvider>
     <AppEventsProvider>
@@ -16,5 +16,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       </AppEventsProvider>
     </AuthProvider>
     </ThemeProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

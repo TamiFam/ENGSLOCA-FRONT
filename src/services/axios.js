@@ -7,6 +7,16 @@ const instance = axios.create({
   withCredentials: true, // <== ключевая опция
 });
 
-
+instance.interceptors.request.use(
+  (config) => {
+    if (['post', 'put', 'patch'].includes(config.method)) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export default instance;

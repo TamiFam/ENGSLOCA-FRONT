@@ -16,7 +16,7 @@ export default function Login() {
     try {
       const res = await loginUser({ username, password }); // 🔥 ИЗМЕНИЛ: email → username
       console.log('✅ Login success:', res.data);
-      login(res.data.token, res.data.user);
+      await login({ username, password });
       navigate("/");
     } catch (err) {
       console.error('❌ Login error:', err);
