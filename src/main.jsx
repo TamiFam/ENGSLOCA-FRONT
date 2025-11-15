@@ -5,6 +5,7 @@ import "./index.css";
 import { AuthProvider } from "./context/AuthContext";
 import { AppEventsProvider } from "./context/AppEventsContext";
 import { ThemeProvider } from "./hooks/ThemeProvider";
+import { PageProvider } from "./context/PageContext";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -12,7 +13,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ThemeProvider>
     <AuthProvider>
     <AppEventsProvider>
+    <PageProvider>
       <App />
+      </PageProvider>
       </AppEventsProvider>
     </AuthProvider>
     </ThemeProvider>

@@ -6,6 +6,7 @@ export default function TestModal({
   onClose,
   currentWeek,
   onTestComplete,
+  
 }) {
   const [isClosing, setIsClosing] = useState(false);
   const [testStage, setTestStage] = useState("config");
@@ -144,6 +145,12 @@ export default function TestModal({
       testedWeek: currentTest.week,
       page: currentTest.page,
       mode: currentTest.mode,
+      pageInfo: selectedMode === 'page' ? {
+        pageNumber: currentPage,
+        wordsCount: getCurrentPageWords().length,
+        totalPages: totalPages
+      } : null
+    
     };
 
     currentTest.words.forEach((word) => {

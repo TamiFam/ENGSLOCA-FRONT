@@ -22,8 +22,10 @@ import WordCard from "./WordCard";
 import '../../../styles/snow.css'; 
 import { useTheme } from "../../hooks/useTheme";
 import { Snowflakes } from "../../effect/snow/snowflakes";
+import { usePage } from "../../context/PageContext";
 
 export default function WordList() {
+  const {changePage} = usePage()
   const { user, logout } = useAuth();
   const {theme, toggleTheme} = useTheme()
   const [words, setWords] = useState([]);
@@ -31,11 +33,8 @@ export default function WordList() {
     const saved = localStorage.getItem("currentWeek");
     return saved ? parseInt(saved) : 1; // По умолчанию 1, а не undefined
   });
-  const [page, setPage] = useState(() => {
-    const saved = localStorage.getItem("page");
-    return saved ? Number(saved) : 1;
-  });
-
+ const {currentPage} = usePage()
+ const page = Number(currentPage)
   const [weekPages, setWeekPages] = useState(() => {
     const saved = localStorage.getItem("weekPages");
     return saved ? JSON.parse(saved) : {};
@@ -66,7 +65,7 @@ export default function WordList() {
   };
 
   const handlePageChange = (newPage) => {
-    setPage(newPage);
+    changePage(newPage);
     if (currentWeek) {
       setWeekPages((prev) => ({
         ...prev,
@@ -79,19 +78,17 @@ export default function WordList() {
     }
   };
 
-  useEffect(() => {
-    localStorage.setItem("page", page);
-  }, [page]);
+
 
   const closeToast = () => {
     setToast(null);
   };
   const handlePrevPage = useCallback(() => {
-    setPage((p) => Math.max(1, p - 1));
+    changePage((p) => Math.max(1, p - 1));
   }, []);
 
   const handleNextPage = useCallback(() => {
-    setPage((p) => p + 1);
+    changePage((p) => p + 1);
   }, []);
 
   useEffect(() => {
@@ -655,7 +652,7 @@ export default function WordList() {
               page={page}
               onPrev={handlePrevPage}
               onNext={handleNextPage}
-              onSelectPage={setPage}
+              onSelectPage={changePage}
             />
             <div className="space-y-4 sm:space-y-6">
               {words.map((w, index) => (
@@ -676,7 +673,7 @@ export default function WordList() {
               page={page}
               onPrev={handlePrevPage}
               onNext={handleNextPage}
-              onSelectPage={setPage}
+              onSelectPage={changePage}
             />
           </>
         )}

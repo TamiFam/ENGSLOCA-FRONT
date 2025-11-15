@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TestModal from "./TestModal";
 import { fetchAllWeekWords } from '../words/wordsAPI'
+import { usePage } from "../../context/PageContext";
 function AddWeeker({
   currentWeek,
   wordsCount, 
@@ -16,10 +17,14 @@ function AddWeeker({
   setAllWordsHidden,
 }) {
   const { user } = useAuth();
+  const { currentPage } = usePage()
   const [porverkaWordsModal, setProverkaWordsModal] = useState(false);
+
+
   const [weekTestOn, setWeekTestOn] = useState(()=> {
-    return localStorage.getItem(`weekTestOn-${currentWeek}`) === 'true'
+    return localStorage.getItem(`weekTestOn-${currentWeek}-page-${currentPage}`) === 'true'
   });
+  
   const [weekWords, setWeekWords] = useState([]);
   const [testResults,setTestResults] = useState([])
   
@@ -37,14 +42,15 @@ function AddWeeker({
         
       }
     };
+    
     useEffect(() => {
       loadWeekWords(currentWeek);
-    }, [currentWeek]); // ← ДОБАВЬ currentWeek В ЗАВИСИМОСТЬ
+    }, [currentWeek]); 
 
     useEffect(() => {
       // Сохраняем значение weekTestOn в localStorage
-      localStorage.setItem(`weekTestOn-${currentWeek}`, weekTestOn);
-    }, [weekTestOn, currentWeek])
+      localStorage.setItem(`weekTestOn-${currentWeek}-page-${currentPage}`, weekTestOn.toString());
+    }, [weekTestOn, currentWeek,currentPage])
 
   
 
@@ -87,33 +93,52 @@ function AddWeeker({
     setProverkaWordsModal(true);
   }, []);
 
-  useEffect(() => {
-    const checkUserTestResult = async () => {
-      if (!user?._id) return;
   
-      try {
-        const res = await fetch(`${API_BASE}/api/tests/${user._id}`);
-        const data = await res.json();
-  
-        if (res.ok && Array.isArray(data.testResults)) {
-          // Проверяем, есть ли тест для текущей недели
-          const weekTest = data.testResults.find(t => Number(t.week) === Number(currentWeek));
-          if (weekTest && weekTest.score > 50) {
-            setTestResults(weekTest)
-            setWeekTestOn(true);
-            localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
-          } else {
-            setWeekTestOn(false);
-            localStorage.removeItem(`weekTestOn-${currentWeek}`);
-          }
+  // ✅ Объявляем checkUserTestResult как useCallback
+  const checkUserTestResult = useCallback(async () => {
+    if (!user?._id) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/tests/${user._id}`);
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.testResults)) {
+        
+        // Ищем тест для текущей недели И текущей страницы
+        const pageTest = data.testResults.find(t => 
+          Number(t.week) === Number(currentWeek) && 
+          t.pageInfo?.page === currentPage.toString()
+        );
+        if (pageTest && pageTest.score > 50) {
+          setTestResults(pageTest);
+          setWeekTestOn(true);
+          localStorage.setItem(`weekTestOn-${currentWeek}-page-${currentPage}`, 'true');
+        } else {
+          setTestResults(null);
+          setWeekTestOn(false);
+          localStorage.removeItem(`weekTestOn-${currentWeek}-page-${currentPage}`);
         }
-      } catch (err) {
-        console.error("Ошибка проверки теста:", err);
       }
+    } catch (err) {
+      console.error("Ошибка проверки теста:", err);
+    }
+  }, [user, currentWeek,currentPage]);
+  
+  useEffect(() => {
+    const handlePageChange = () => {
+      // Принудительно проверяем тест при смене страницы
+      checkUserTestResult();
     };
   
+    window.addEventListener('pageChanged', handlePageChange);
+    
+    return () => {
+      window.removeEventListener('pageChanged', handlePageChange);
+    };
+  }, [checkUserTestResult]);
+  
+  useEffect(() => {
     checkUserTestResult();
-  }, [user, currentWeek]);
+  }, [checkUserTestResult,currentPage]);
+
  
   const handleTestComplete = async (results) => {
     console.log("Результаты теста:", results);
@@ -128,6 +153,13 @@ function AddWeeker({
       userId: user._id,
       week: currentWeek,
       score,
+      pageInfo: {
+        page: results.page, // 'all' или номер страницы
+        mode: results.mode, // 'page' или 'all'
+        pageNumber: results.pageInfo?.pageNumber || null,
+        wordsCount: results.pageInfo?.wordsCount || results.total,
+        totalPages: results.pageInfo?.totalPages || 1
+      },
     };
   
     console.log("Отправляем результат:", payload);
@@ -151,7 +183,8 @@ function AddWeeker({
   const newTestResult = {
     week: currentWeek,
     score: score,
-    date: new Date().toISOString()
+    date: new Date().toISOString(),
+    pageInfo: payload.pageInfo
   };
   
       
@@ -161,25 +194,29 @@ function AddWeeker({
 
         if (score > 50) {
           setWeekTestOn(true);
-          localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
+          localStorage.setItem(`weekTestOn-${currentWeek}-page-${currentPage}`, 'true');
           showToast(`Тест пройден! Новый результат: ${score}%`, "success");
         } else {
           setWeekTestOn(false);
-          localStorage.removeItem(`weekTestOn-${currentWeek}`);
+          localStorage.removeItem(`weekTestOn-${currentWeek}-page-${currentPage}`);
           showToast(`Тест не пройден. Набрано ${score}% из 50%`, "warning");
         }
       } else {
          // Результат не был обновлен (предыдущий результат лучше)
-      const currentWeekResult = data.testResults.find(t => Number(t.week) === Number(currentWeek));
+         const page = currentPage.toString();
+         const currentWeekResult = data.testResults.find(t => 
+           Number(t.week) === Number(currentWeek) && 
+           t.pageInfo?.page === page
+         );
       if (currentWeekResult) {
         setTestResults(currentWeekResult);
         // ✅ Синхронизируем состояние с серверным результатом
         if (currentWeekResult.score > 50) {
           setWeekTestOn(true);
-          localStorage.setItem(`weekTestOn-${currentWeek}`, 'true');
+          localStorage.setItem(`weekTestOn-${currentWeek}-page-${currentPage}`, 'true');
         } else {
           setWeekTestOn(false);
-          localStorage.removeItem(`weekTestOn-${currentWeek}`);
+          localStorage.removeItem(`weekTestOn-${currentWeek}-page-${currentPage}`);
         }
       }
       showToast(`Тест пройден, но предыдущий результат был лучше (${currentWeekResult?.score}%)`, "info");
@@ -188,7 +225,7 @@ function AddWeeker({
       console.error("Ошибка при сохранении результата:", err.message);
       // Откатываем состояние если сохранение не удалось
       setWeekTestOn(false);
-      localStorage.removeItem(`weekTestOn-${currentWeek}`);
+      localStorage.removeItem(`weekTestOn-${currentWeek}-page-${currentPage}`);
     }
   };
   
