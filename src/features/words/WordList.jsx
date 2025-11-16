@@ -23,6 +23,7 @@ import '../../../styles/snow.css';
 import { useTheme } from "../../hooks/useTheme";
 import { Snowflakes } from "../../effect/snow/snowflakes";
 import { usePage } from "../../context/PageContext";
+import Chat from "../../components/Chat";
 
 export default function WordList() {
   const {changePage} = usePage()
@@ -39,7 +40,7 @@ export default function WordList() {
     const saved = localStorage.getItem("weekPages");
     return saved ? JSON.parse(saved) : {};
   });
-
+  const [showChat, setShowChat] = useState(false);
   const [wordModalOpen, setWordModalOpen] = useState(false);
   const [wordInfoModal, setWordInfoModal] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -154,7 +155,7 @@ export default function WordList() {
     setLoading(true);
     try {
       const res = await fetchWords({ page, limit: 10, week: currentWeek });
-      console.log("📊 Ответ от API:", res.data);
+      // console.log("📊 Ответ от API:", res.data);
 
       if (res.data && Array.isArray(res.data.words)) {
         setWords(res.data.words);
@@ -379,6 +380,7 @@ export default function WordList() {
       />
     );
   }, [currentWeek, loading, allWordsHidden,]);
+  
 
   // ✅ Мемоизируем WeekSelector
 
@@ -440,6 +442,7 @@ export default function WordList() {
 `}
 </style>
 
+
 <button
   onClick={toggleTheme}
   className="p-2 rounded-full m-2 bg-white dark:bg-black relative overflow-hidden"
@@ -451,6 +454,15 @@ export default function WordList() {
     {theme === 'dark' ? '🌙' : '☀️'}
   </span>
 </button>
+
+<button
+  onClick={() => setShowChat(!showChat)}
+  className="fixed top-4 right-4 z-50 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 hidden md:block"
+  title="Community Chat"
+>
+  {showChat ? '✕' : '💬'}
+</button>
+
       {/* Toast уведомление */}
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={closeToast} />
@@ -458,6 +470,7 @@ export default function WordList() {
       
       {/* СНЕЖИНКИ */}
    <Snowflakes/>
+   
 
 {/* Абстрактные геометрические фигуры - скрыты на мобильных */}
 <div className="fixed inset-0 pointer-events-none hidden md:block z-10">
@@ -525,16 +538,29 @@ export default function WordList() {
         <div className="fixed inset-0 bg-white z-40 p-6 md:hidden dark:bg-black  ">
           <div className="pt-16 ">
             {user ? (
+              
               <div className="space-y-4 mb-8 ">
+                        {/* 👇 КНОПКА ЧАТА В МОБИЛЬНОМ МЕНЮ */}
+          <button
+            onClick={() => {
+              setShowChat(!showChat);
+              setMobileMenuOpen(false); // закрываем меню при открытии чата
+            }}
+            className="bg-blue-200 border-2 border-black px-4 py-3 text-base font-bold hover:bg-blue-300 transition-colors duration-200 w-full"
+          >
+            {showChat ? '✕ Закрыть чат' : '💬 Открыть чат'}
+          </button>
                 <div className="bg-green-200 border-2 border-black  px-4 py-3 text-base font-bold ">
                   ✅ {user.username}
                 </div>
+            
                 <button
                   onClick={logout}
                   className="bg-red-200 border-2 border-black px-4 py-3 text-base font-bold hover:bg-red-300 transition-colors duration-200 w-full "
                 >
                   🚪 Выйти
                 </button>
+           
               </div>
             ) : (
               <div className="bg-yellow-200   border-2 border-black px-4 py-2 text-sm font-bold mb-4 mt-4 flex justify-center">                
@@ -616,7 +642,7 @@ export default function WordList() {
           onPageChange={handlePageChange}
           getPagesCount={getPagesCount}
         />
-
+        
         {/* ВТОРАЯ СЕКЦИЯ С "ДОБАВИТЬ СЛОВО"*/}
         {memoizedAddWeeker}
 
@@ -684,12 +710,22 @@ export default function WordList() {
         {wordModal}
 
         {authModal}
+        
       </div>
 
       {/* Футер в стиле минимализм */}
       <div className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 text-xs text-gray-500 font-mono">
         ENGLISH WORDS v1.0
       </div>
+     
+     <div>
+     {showChat && (
+  <div className="fixed top-20 left-4 right-4 bottom-4 md:left-auto md:right-4 md:top-20 md:w-96 md:bottom-4 z-50 bg-white dark:bg-gray-800 border-4 border-black shadow-2xl rounded-lg overflow-hidden">
+    <Chat onClose={() => setShowChat(false)} />
+  </div>
+)}
+     </div>
     </div>
+    
   );
 }

@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const res = await getMe();
-      console.log("✅ User authenticated:", res.data); // для отладки
+      // console.log("✅ User authenticated:", res.data); // для отладки
       setUser(res.data);
     } catch (err) {
       console.log("❌ Not authenticated:", err.message); // для отладки
