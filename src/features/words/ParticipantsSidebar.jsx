@@ -38,15 +38,12 @@ export default function ParticipantsSidebar() {
 
   // Загрузка участников только при монтировании
   const loadParticipants = useCallback(async () => {
-    if (!token) return;
+    
     
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/users/status`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+      
         credentials: 'include'
       });
       
@@ -59,7 +56,7 @@ export default function ParticipantsSidebar() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Загружаем только при монтировании и при изменении токена
   useEffect(() => {
