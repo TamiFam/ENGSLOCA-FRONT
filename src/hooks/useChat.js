@@ -8,8 +8,17 @@ export const useChat = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const ws = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
   const { user } = useAuth(); 
   const connect = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+        // 🔥 ЗАКРЫВАЕМ предыдущее соединение если есть
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+          ws.current.close();
+        }
     // 🔥 ИСПРАВЛЕНИЕ: Всегда используем ваш бэкенд на Render
     const wsUrl = 'wss://engsloca-back.onrender.com/ws';
 
@@ -42,10 +51,7 @@ export const useChat = () => {
             break;
           case 'online_users':
             setOnlineUsers(data.data);
-            const currentUser = data.data.find(onlineUser => 
-                onlineUser.username === user?.username
-              );
-            if (currentUser) setUserRole(currentUser.role);
+           
             break;
           case 'message_deleted':
             setMessages(prev => prev.filter(msg => msg.id !== data.data));
@@ -68,7 +74,7 @@ export const useChat = () => {
       setIsConnected(false);
     //   console.log('💬 Disconnected from chat:', event.code, event.reason);
       
-      setTimeout(() => {
+    reconnectTimeoutRef.current = setTimeout(() => {
         // console.log('💬 Attempting to reconnect...');
         connect();
       }, 5000);
@@ -84,6 +90,11 @@ export const useChat = () => {
     connect();
 
     return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      
       if (ws.current) {
         ws.current.close();
       }

@@ -58,8 +58,8 @@ const Chat = ({ onClose }) => { // ← ДОБАВЬТЕ ЭТОТ ПРОПС
               </span>
             </span>
             <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-              <span className="hidden md:inline">🎄 {onlineUsers.length} online</span>
-              <span className="md:hidden">🎄 {onlineUsers.length}</span>
+              <span className=" md:inline">🎄 {onlineUsers.length} online</span>
+              {/* <span className="md:hidden">🎄 {onlineUsers.length}</span> */}
             </span>
           </div>
           
@@ -124,7 +124,7 @@ const Chat = ({ onClose }) => { // ← ДОБАВЬТЕ ЭТОТ ПРОПС
         )}
         <div ref={messagesEndRef} />
       </div>
-➤
+
       {/* Message Input Form - компактный на мобильных */}
       <form onSubmit={handleSubmit} className="p-2 md:p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex gap-2">
