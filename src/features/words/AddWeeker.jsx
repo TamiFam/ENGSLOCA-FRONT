@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TestModal from "./TestModal";
 import { fetchAllWeekWords } from '../words/wordsAPI'
 import { usePage } from "../../context/PageContext";
+import SentenceTestModal from "./SentenceTestModal";
 function AddWeeker({
   currentWeek,
   wordsCount, 
@@ -19,7 +20,7 @@ function AddWeeker({
   const { user } = useAuth();
   const { currentPage } = usePage()
   const [porverkaWordsModal, setProverkaWordsModal] = useState(false);
-
+  const [sentenceTestOpen, setSentenceTestOpen] = useState(false);
 
   const [weekTestOn, setWeekTestOn] = useState(()=> {
     return localStorage.getItem(`weekTestOn-${currentWeek}-page-${currentPage}`) === 'true'
@@ -52,7 +53,8 @@ function AddWeeker({
       localStorage.setItem(`weekTestOn-${currentWeek}-page-${currentPage}`, weekTestOn.toString());
     }, [weekTestOn, currentWeek,currentPage])
 
-  
+    const openSentenceTest = () => setSentenceTestOpen(true);
+    const closeSentenceTest = () => setSentenceTestOpen(false);
 
   // ✅ Мемоизируем проверку прав
   const canAdd = useMemo(() => {
@@ -269,6 +271,17 @@ function AddWeeker({
                     }
                 </div>
               </button>
+            <div>
+            
+            </div>
+            </div>
+            <div className="flex justify-center items-center">
+            <button
+    onClick={openSentenceTest}
+    className="px-1 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 "
+  >
+    Новый тест c  предложениями
+  </button>
             </div>
 
             {/* Подсказка при наведении */}
@@ -314,6 +327,11 @@ function AddWeeker({
           onClose={handleCloseTestModal}
           currentWeek={currentWeek}
           onTestComplete={handleTestComplete}
+        />
+        <SentenceTestModal
+        isOpen={sentenceTestOpen}
+        onClose={closeSentenceTest}
+        words={weekWords}
         />
       </div>
     </div>
