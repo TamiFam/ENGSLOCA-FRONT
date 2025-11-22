@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../services/axios"
 
 export default function SentenceTestModal({ words, isOpen , onClose  }) {
 
@@ -21,7 +21,7 @@ export default function SentenceTestModal({ words, isOpen , onClose  }) {
   const checkSentence = async () => {
     setChecking(true);
     try {
-      const response = await axios.post("https://engsloca-back.onrender.com/api/deepseek/check-sentence", {
+      const response = await axiosInstance.post("/deepseek/check-sentence", {
         word: currentWord.word,
         sentence: userSentence,
       });

@@ -1,8 +1,12 @@
 // src/services/axios.js
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.PROD 
+  ? "https://engsloca-back.onrender.com/api"  // Production
+  : "http://localhost:3000/api";               // Development
+
 const instance = axios.create({
-  baseURL: "https://engsloca-back.onrender.com/api", // твой backend
+  baseURL: API_BASE_URL, // твой backend
 
   withCredentials: true, // <== ключевая опция
 });
