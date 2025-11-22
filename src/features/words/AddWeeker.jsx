@@ -278,7 +278,12 @@ function AddWeeker({
             <div className="flex justify-center items-center">
             <button
     onClick={openSentenceTest}
-    className="px-1 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 "
+    disabled={!canAdd || loading}
+    className={`px-1 py-1 bg-purple-600 text-white rounded-lg hover:bg-blue-700 text-sm ${
+      canAdd
+        ? "bg-green-400 text-black border-black hover:bg-green-200 dark:hover:bg-green-400 transition-colors duration-300 dark:bg-green-300"
+        : "bg-gray-600 text-gray-200 border-gray-400 cursor-not-allowed transition-colors duration-300"
+    }`}
   >
     Новый тест c  предложениями
   </button>
