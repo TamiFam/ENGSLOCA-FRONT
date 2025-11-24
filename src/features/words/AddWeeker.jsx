@@ -262,10 +262,10 @@ function AddWeeker({
               }`}
             >
               <button
-                className="cursor-pointer text-center transition-colors duration-300"
+                className="cursor-pointer text-center transition-colors duration-300  min-w-[140px] min-h-10"
                 onClick={handleOpenTestModal}
               >
-                <div className="text-xs">НЕДЕЛЬНЫЙ ТЕСТ</div>
+                <div className="text-xs">ТЕСТ</div>
                 <div className="text-xs font-normal">
                   {weekTestOn && testResults?.score
                     ? `✅ Пройден на ${testResults.score} %` 
