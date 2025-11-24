@@ -234,6 +234,21 @@ export default function SentenceTestModal({ words, isOpen, onClose }) {
                 <p className="text-white text-base sm:text-lg mb-2">
                   {checkResult.correct ? "✅ Правильно!" : "❌ Есть ошибки"}
                 </p>
+               {/* ДОБАВЛЕНО: Отображение оценки - исправлены отступы */}
+        {checkResult.accuracyScore !== undefined && (
+          <div className="mb-3 p-2 bg-gray-700 rounded-lg">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-gray-300 text-sm">Точность использования:</span>
+              <span className="text-white font-bold">{checkResult.accuracyScore}/10</span>
+            </div>
+            <div className="w-full bg-gray-600 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${checkResult.accuracyScore * 10}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
 
                 {checkResult.feedback && (
                   <p className="text-gray-300 mb-2 text-sm sm:text-base">{checkResult.feedback}</p>

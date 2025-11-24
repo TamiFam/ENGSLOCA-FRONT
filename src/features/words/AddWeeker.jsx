@@ -240,9 +240,11 @@ function AddWeeker({
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="text-center sm:text-left">
-          <h2 className="text-sm sm:text-xl lg:text-sm font-black text-black dark:text-white   mb-2 transition-colors duration-300">
-            WEEK {currentWeek}
+          <h2 className="text-sm sm:text-xl lg:text-sx font-black text-black dark:text-white  transition-colors duration-300">
+            WEEK 
+            <h3 className="flex justify-center">{currentWeek}</h3>
           </h2>
+          
           <p className="text-gray-400 font-bold text-sm sm:text-base transition-colors duration-300">
             📚 {wordsCount} 
           </p>
@@ -253,7 +255,7 @@ function AddWeeker({
 
           <div className="relative">
             <div
-              className={`px-4 py-4 font-black border-3 border-black dark:bg-gray-400 flex items-center text-sm justify-center gap-2 transition-all duration-300 ${
+              className={`px-3 py-3 font-black border-3 border-black dark:bg-gray-400 flex items-center text-sm justify-center gap-2 transition-all duration-300  ${
                 weekTestOn
                   ? "bg-green-400 hover:bg-green-300 dark:bg-green-300 dark:hover:bg-green-400"
                   : "bg-red-400 hover:bg-red-300 dark:bg-red-300 dark:hover:bg-red-400"
@@ -263,7 +265,7 @@ function AddWeeker({
                 className="cursor-pointer text-center transition-colors duration-300"
                 onClick={handleOpenTestModal}
               >
-                <div className="text-sm">НЕДЕЛЬНЫЙ ТЕСТ</div>
+                <div className="text-xs">НЕДЕЛЬНЫЙ ТЕСТ</div>
                 <div className="text-xs font-normal">
                   {weekTestOn && testResults?.score
                     ? `✅ Пройден на ${testResults.score} %` 
@@ -276,17 +278,17 @@ function AddWeeker({
             </div>
             </div>
             <div className="flex justify-center items-center">
-            <button
+            {/* <button
     onClick={openSentenceTest}
     disabled={!canAdd || loading}
-    className={`px-1 py-1 bg-purple-600 text-white rounded-lg hover:bg-blue-700 text-sm ${
+    className={`px-1 py-1 bg-blue-600 text-black  hover:bg-blue-700 text-xs mb-3 ${
       canAdd
-        ? "bg-green-400 text-black border-black hover:bg-green-200 dark:hover:bg-green-400 transition-colors duration-300 dark:bg-green-300"
-        : "bg-gray-600 text-gray-200 border-gray-400 cursor-not-allowed transition-colors duration-300"
+        ? "bg-green-400 text-black border-black hover:bg-green-200  transition-colors duration-300 dark:bg-green-300"
+        : "bg-gray-500 text-gray-200 border-gray-400 cursor-not-allowed transition-colors duration-300"
     }`}
   >
     Новый тест c  предложениями
-  </button>
+  </button> */}
             </div>
 
             {/* Подсказка при наведении */}
@@ -296,14 +298,25 @@ function AddWeeker({
               </div>
             )}
           </div>
+          <button
+    onClick={openSentenceTest}
+    disabled={!canAdd || loading}
+    className={`px-4 py-4 font-black  border-3 border-black dark:bg-gray-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[100px] ${
+      canAdd
+        ? "bg-green-200  border-black hover:bg-green-200  transition-colors duration-300 dark:bg-green-300"
+        : "bg-green-200 text-black  dark:bg-green-200 cursor-not-allowed transition-colors duration-300"
+    }`}
+  >
+    Новый тест c  предложениями
+  </button>
 
           {/* Кнопка скрытия всех слов */}
           <button
             onClick={toggleAllWordsVisibility}
-            className={`px-4 py-4 font-black border-4 border-black dark:bg-gray-300 flex items-center justify-center transition-all  duration-200 text-sm  min-w-[200px] ${
+            className={`px-4 py-4 font-black border-3 border-black dark:bg-gray-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[100px]  ${
               allWordsHidden
                 ? "bg-green-200 text-black hover:bg-green-300 dark:bg-green-300"
-                : "bg-gray-200 text-black  dark:bg-gray-300"
+                : "bg-green-200 text-black  dark:bg-green-200"
             }`}
             title={allWordsHidden ? "Показать все слова" : "Скрыть все слова"}
           >
@@ -314,17 +327,17 @@ function AddWeeker({
 
           {/* Кнопка добавления слова */}
           <button
-            className={`px-4 py-4 font-bold text-sm sm:text-base border-4 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 flex-1 ${
+            className={`px-3 py-3 font-bold text-xs sm:text-base border-3 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 flex-1   ${
               canAdd
-                ? "bg-green-400 text-black border-black hover:bg-green-200 dark:hover:bg-green-400 transition-colors duration-300 dark:bg-green-300"
-                : "bg-gray-600 text-gray-200 border-gray-400 cursor-not-allowed transition-colors duration-300"
+                ? "bg-green-200 text-black border-black hover:bg-green-200 dark:hover:bg-green-400 transition-colors duration-300 dark:bg-green-300"
+                : "bg-green-200 text-black border-black cursor-not-allowed transition-colors duration-300"
             }`}
             onClick={() => requireAuth(handleAddClick)}
             disabled={!canAdd || loading}
           >
-            <span className="text-sm sm:text-xl">⚡</span>
-            <span className="text-sm">ДОБАВИТЬ СЛОВО</span>
-            <span className="text-sm sm:text-xl">⚡</span>
+            <span className="text-sm xs:text-xl">⚡</span>
+            <span className="text-xs ">ДОБАВИТЬ СЛОВО</span>
+            <span className="text-sm xs:text-xl">⚡</span>
           </button>
         </div>
         <TestModal
