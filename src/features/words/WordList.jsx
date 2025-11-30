@@ -40,6 +40,7 @@ export default function WordList() {
     const saved = localStorage.getItem("weekPages");
     return saved ? JSON.parse(saved) : {};
   });
+  const [backgroundWords, setBackgroundWords] = useState([])
   const [showChat, setShowChat] = useState(false);
   const [wordModalOpen, setWordModalOpen] = useState(false);
   const [wordInfoModal, setWordInfoModal] = useState(false);
@@ -161,6 +162,10 @@ export default function WordList() {
         setWords(res.data.words);
         setTotalPages(res.data.pages || 1);
         setTotalWordsCount(res.data.total || 0);
+        // 🔥 Кешируем слова для фона только если массив пустой
+      if (backgroundWords.length === 0 && res.data.words.length > 0) {
+        setBackgroundWords(res.data.words);
+      }
       } else {
         setWords([]);
         setTotalPages(1);
@@ -211,13 +216,25 @@ export default function WordList() {
     },
     [user, showToast]
   ); // ← зависимости: user и showToast
-
+  const mixWords = () => {
+    setWords(prevWords => {
+      const shuffled = [...prevWords];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    });
+    showToast("Слова перемешаны!", "info");
+  };
   const handleDeleteClick = async (id) => {
     if (!user) {
       showToast("Для удаления слов требуется авторизация", "warning"); // 👈
       setAuthModalOpen(true);
       return;
     }
+
+    
 
     // 👇 Проверка прав для удаления
     if (!canDelete(user)) {
@@ -477,37 +494,37 @@ export default function WordList() {
  
   {/* Плавающие слова с анимацией */}
   <div className="absolute top-14 left-10 text-3xl font-black  dark:text-white  text-gray-800 opacity-35 transform -rotate-12 animate-float-1 blur-[3px]">
-    {words[1]?.word}
+    {backgroundWords[1]?.word}
   </div>
   <div className="absolute top-12 right-16 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-6 animate-float-2 blur-[3px]">
-    {words[0]?.translation}
+    {backgroundWords[0]?.translation}
   </div>
   <div className="absolute bottom-28 left-20 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-45 animate-float-3 blur-[2px]">
-    {words[2]?.word}
+    {backgroundWords[2]?.word}
   </div>
   <div className="absolute bottom-36 right-24 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-45 animate-float-4 blur-[3px]">
-    {words[3]?.word}
+    {backgroundWords[3]?.word}
   </div>
   <div className="absolute top-1/3 left-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-12 animate-float-5 blur-[2px]">
-    {words[5]?.translation}
+    {backgroundWords[5]?.translation}
   </div>
   <div className="absolute top-2/3 right-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform -rotate-8 animate-float-6 blur-[3px]">
-    {words[6]?.word}
+    {backgroundWords[6]?.word}
   </div>
  
 
   {/* Дополнительные слова для большего заполнения */}
   <div className="absolute top-40 left-1/2 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-3 animate-float-7 blur-[3px]">
-    {words[7]?.translation}
+    {backgroundWords[7]?.translation}
   </div>
   <div className="absolute bottom-10 right-1/3 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-15 animate-float-8 blur-[3px]">
-    {words[8]?.word}
+    {backgroundWords[8]?.word}
   </div>
   <div className="absolute top-1/4 right-8 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-20 animate-float-9 blur-[3px]">
-    {words[9]?.translation}
+    {backgroundWords[9]?.translation}
   </div>
   <div className="absolute bottom-44 left-1/4 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-25 animate-float-10 blur-[3px]">
-    {words[10]?.word}
+    {backgroundWords[10]?.word}
   </div>
 </div>
 
@@ -680,6 +697,28 @@ export default function WordList() {
               onNext={handleNextPage}
               onSelectPage={changePage}
             />
+            <div className="flex justify-center items-center pb-9">
+            <button
+  onClick={mixWords}
+  className="
+    bg-black hover:bg-gray-800
+    dark:bg-white dark:hover:bg-gray-200
+    border-2 border-black dark:border-white
+    px-6 py-3
+    font-bold text-white dark:text-black
+    transition-all duration-300
+    hover:scale-105
+    active:scale-95
+    group
+  "
+>
+  <span className="flex items-center gap-2">
+    <span className="group-hover:rotate-90 transition-transform duration-300">↻</span>
+    SHUFFLE
+    <span className="group-hover:-rotate-90 transition-transform duration-300">↺</span>
+  </span>
+</button>
+            </div>
             <div className="space-y-4 sm:space-y-6">
               {words.map((w, index) => (
                 <WordCard

@@ -262,7 +262,7 @@ function AddWeeker({
               }`}
             >
               <button
-                className="cursor-pointer text-center transition-colors duration-300  min-w-[140px] min-h-10"
+                className="cursor-pointer text-center transition-colors duration-300  min-w-[100px] min-h-10"
                 onClick={handleOpenTestModal}
               >
                 <div className="text-xs">ТЕСТ</div>
