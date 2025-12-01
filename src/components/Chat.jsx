@@ -38,7 +38,7 @@ const Chat = ({ onClose }) => { // ← ДОБАВЬТЕ ЭТОТ ПРОПС
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 z-10 w-6 h-6  text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors md:hidden"
+          className="absolute top-2 right-2 z-10 w-6 h-6  dark:bg-white text-black rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors md:hidden"
           title="Close chat"
         >
           ✕
