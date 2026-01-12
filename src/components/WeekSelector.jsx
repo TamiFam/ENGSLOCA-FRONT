@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { getAvailableWeeks } from "../features/words/wordsAPI";
+import { WeekStats } from "./WeekStats";
 
-export default function WeekSelector({ currentWeek, onWeekChange, currentPage, onPageChange, getPagesCount }) {
+export default function WeekSelector({ currentWeek, onWeekChange, currentPage, onPageChange, getPagesCount,wordsCount }) {
   const [weeks, setWeeks] = useState([])
   const [newWeek, setNewWeek] = useState("");
   const [loading, setLoading] = useState(false);
@@ -119,7 +120,7 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
             ВСЕГО: {weeks.length}
           </span>
         </div>
-
+ 
         {/* Пагинация недель */}
         <div className="flex flex-wrap justify-center gap-2 sm:gap-3 ">
           {weekRange.map((w, i) =>
@@ -190,6 +191,15 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
             </div>
           )}
         </div>
+        <WeekStats 
+        position="left"
+        wordsCount={wordsCount}
+        />
+
+        <WeekStats 
+        position="right"
+        wordsCount={wordsCount}
+        />
       </div>
     </div>
   );

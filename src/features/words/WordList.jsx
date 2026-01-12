@@ -658,6 +658,7 @@ export default function WordList() {
           currentPage={page}
           onPageChange={handlePageChange}
           getPagesCount={getPagesCount}
+          wordsCount={totalWordsCount}
         />
         
         {/* ВТОРАЯ СЕКЦИЯ С "ДОБАВИТЬ СЛОВО"*/}
@@ -754,7 +755,7 @@ export default function WordList() {
 
       {/* Футер в стиле минимализм */}
       <div className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 text-xs text-gray-500 font-mono">
-        ENGLISH WORDS v1.0
+        ENGLISH WORDS v1.5
       </div>
      
      <div>

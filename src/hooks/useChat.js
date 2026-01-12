@@ -1,67 +1,85 @@
 // src/hooks/useChat.js
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getEncryptedMessages, saveEncryptedMessages } from '../helpers/secureCache';
 
 export const useChat = () => {
-  const [messages, setMessages] = useState([]);
+  const { user } = useAuth();
+  const chatId = 'main_chat'; // можно сделать динамическим для разных комнат
+
+  // Инициализация state из кэша
+  const [messages, setMessages] = useState(() => getEncryptedMessages(chatId));
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(user?.role || null);
+
   const ws = useRef(null);
   const reconnectTimeoutRef = useRef(null);
-  const { user } = useAuth(); 
+
   const connect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-        // 🔥 ЗАКРЫВАЕМ предыдущее соединение если есть
-        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-          ws.current.close();
-        }
-    // 🔥 ИСПРАВЛЕНИЕ: Всегда используем ваш бэкенд на Render
-    const wsUrl = 'wss://engsloca-back.onrender.com/ws';
 
-    // console.log('🔌 Connecting to WebSocket:', wsUrl);
+    // Закрываем предыдущее соединение
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.close();
+    }
+
+    const wsUrl = 'wss://engsloca-back.onrender.com/ws';
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
       setIsConnected(true);
-    //   console.log('💬 Connected to chat');
       if (user) {
         setUserRole(user.role);
-        // console.log('🎯 User role set to:', user.role);
+      }
+      // Можно запросить историю, если кэш пуст
+      if (getEncryptedMessages(chatId).length === 0) {
+        ws.current.send(JSON.stringify({ type: 'get_history', limit: 50 }));
       }
     };
 
     ws.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // console.log('📨 WebSocket message received:', data.type);
-        
+
         switch (data.type) {
-          case 'welcome':
-            console.log('👋 Welcome message:', data.message);
-            break;
           case 'message_history':
             setMessages(data.data);
+            saveEncryptedMessages(chatId, data.data);
             break;
+
           case 'new_message':
-            setMessages(prev => [...prev, data.data]);
+            setMessages(prev => {
+              const updated = [...prev, data.data];
+              saveEncryptedMessages(chatId, updated);
+              return updated;
+            });
             break;
+
           case 'online_users':
             setOnlineUsers(data.data);
-           
             break;
+
           case 'message_deleted':
-            setMessages(prev => prev.filter(msg => msg.id !== data.data));
+            setMessages(prev => {
+              const updated = prev.filter(msg => msg.id !== data.data);
+              saveEncryptedMessages(chatId, updated);
+              return updated;
+            });
             break;
+
           case 'chat_cleared':
             setMessages([]);
+            saveEncryptedMessages(chatId, []);
             break;
+
           case 'error':
             console.error('Chat error:', data.data);
             break;
+
           default:
             console.log('Unknown message type:', data.type);
         }
@@ -70,12 +88,9 @@ export const useChat = () => {
       }
     };
 
-    ws.current.onclose = (event) => {
+    ws.current.onclose = () => {
       setIsConnected(false);
-    //   console.log('💬 Disconnected from chat:', event.code, event.reason);
-      
-    reconnectTimeoutRef.current = setTimeout(() => {
-        // console.log('💬 Attempting to reconnect...');
+      reconnectTimeoutRef.current = setTimeout(() => {
         connect();
       }, 5000);
     };
@@ -84,7 +99,7 @@ export const useChat = () => {
       console.error('WebSocket error:', error);
       setIsConnected(false);
     };
-  }, [user]);
+  }, [user, chatId]);
 
   useEffect(() => {
     connect();
@@ -94,33 +109,22 @@ export const useChat = () => {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      
-      if (ws.current) {
-        ws.current.close();
-      }
+      if (ws.current) ws.current.close();
     };
   }, [connect]);
 
   const sendMessage = useCallback((text) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      const message = {
-        type: 'chat_message',
-        text: text
-      };
+      const message = { type: 'chat_message', text };
       ws.current.send(JSON.stringify(message));
-      console.log('📤 Message sent:', message);
       return true;
     }
-    console.warn('WebSocket not connected, cannot send message');
     return false;
   }, []);
 
   const deleteMessage = useCallback((messageId) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({
-        type: 'delete_message',
-        messageId: messageId
-      }));
+      ws.current.send(JSON.stringify({ type: 'delete_message', messageId }));
       return true;
     }
     return false;
@@ -128,22 +132,20 @@ export const useChat = () => {
 
   const clearChat = useCallback(() => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({
-        type: 'clear_chat'
-      }));
+      ws.current.send(JSON.stringify({ type: 'clear_chat' }));
       return true;
     }
     return false;
   }, []);
 
-  return { 
-    messages, 
-    onlineUsers, 
-    isConnected, 
+  return {
+    messages,
+    onlineUsers,
+    isConnected,
     userRole,
     sendMessage,
     deleteMessage,
     clearChat,
-    reconnect: connect
+    reconnect: connect,
   };
 };

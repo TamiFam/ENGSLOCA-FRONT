@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "https://engsloca-back.onrender.com/api", // твой backend
+  baseURL: "http://localhost:5000/api", // твой backendhttp://localhost:5000/api
 
   withCredentials: true, // <== ключевая опция
 });

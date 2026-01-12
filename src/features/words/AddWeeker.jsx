@@ -1,10 +1,11 @@
 import { useAuth } from "../../context/AuthContext";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import TestModal from "./TestModal";
+import TestModal from "../tests/TestModal";
 import { fetchAllWeekWords } from '../words/wordsAPI'
 import { usePage } from "../../context/PageContext";
-import SentenceTestModal from "./SentenceTestModal";
+import SentenceTestModal from "../tests/SentenceTestModal";
+import VoiceTestModal from "../tests/voiceTestModal";
 function AddWeeker({
   currentWeek,
   wordsCount, 
@@ -21,6 +22,7 @@ function AddWeeker({
   const { currentPage } = usePage()
   const [porverkaWordsModal, setProverkaWordsModal] = useState(false);
   const [sentenceTestOpen, setSentenceTestOpen] = useState(false);
+  const [voiceTestOpen,setVoiceTestOpen] = useState(false)
 
   const [weekTestOn, setWeekTestOn] = useState(()=> {
     return localStorage.getItem(`weekTestOn-${currentWeek}-page-${currentPage}`) === 'true'
@@ -29,7 +31,7 @@ function AddWeeker({
   const [weekWords, setWeekWords] = useState([]);
   const [testResults,setTestResults] = useState([])
   
-  const API_BASE = "https://engsloca-back.onrender.com";
+  const API_BASE = "http://localhost:5000";
     // 👇 Функция загрузки слов недели
     const loadWeekWords = async (week) => {
       
@@ -55,6 +57,9 @@ function AddWeeker({
 
     const openSentenceTest = () => setSentenceTestOpen(true);
     const closeSentenceTest = () => setSentenceTestOpen(false);
+
+    const openVoiceTest = () => setVoiceTestOpen(true);
+const closeVoiceTest = () => setVoiceTestOpen(false);
 
   // ✅ Мемоизируем проверку прав
   const canAdd = useMemo(() => {
@@ -234,21 +239,21 @@ function AddWeeker({
 
 
   return (
-    <div className="bg-white border-4 border-black dark:bg-gray-800 dark:border-gray-600 p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 relative transition-colors duration-300">
-      <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-4 h-4 sm:w-6 sm:h-6 bg-black dark:bg-gray-400 transition-colors duration-300"></div>
+    <div className="bg-white border-4 border-black dark:bg-gray-800 dark:border-gray-600 p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 relative transition-colors duration-300  ">
+      <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-4 h-4 sm:w-6 sm:h-6 bg-black dark:bg-gray-400 transition-colors duration-300 "></div>
       <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-4 h-4 sm:w-6 sm:h-6 bg-black dark:bg-gray-400 transition-colors duration-300"></div>
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div className="text-center sm:text-left">
+        {/* <div className="text-center sm:text-left">
           <h2 className="text-sm sm:text-xl lg:text-sx font-black text-black dark:text-white  transition-colors duration-300">
             WEEK 
-            <h3 className="flex justify-center">{currentWeek}</h3>
+            <h3 className="flex justify-center">{currentWeek}</h3>                                                                              //ЦИФРЫ НЕДЕЛИ ВАЖНО
           </h2>
           
           <p className="text-gray-400 font-bold text-sm sm:text-base transition-colors duration-300">
             📚 {wordsCount} 
           </p>
-        </div>
+        </div> */}
 
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           {/*ТЕСТ СЛОВ ПРОВЕРКА */}
@@ -301,22 +306,31 @@ function AddWeeker({
           <button
     onClick={openSentenceTest}
     disabled={!canAdd || loading}
-    className={`px-4 py-4 font-black  border-3 border-black dark:bg-gray-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[100px] ${
+    className={`px-4 py-4 font-black  border-3 border-black dark:bg-green-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[100px] ${
       canAdd
-        ? "bg-green-200  border-black hover:bg-green-200  transition-colors duration-300 dark:bg-green-300"
-        : "bg-green-200 text-black  dark:bg-green-200 cursor-not-allowed transition-colors duration-300"
+        ? "bg-green-300  border-black hover:bg-green-200  transition-colors duration-300 dark:bg-green-300"
+        : "bg-green-300 text-black  dark:bg-green-200 cursor-not-allowed transition-colors duration-300"
     }`}
   >
     Новый тест c  предложениями
   </button>
+ 
+  <button
+    onClick={openVoiceTest} // открывает модалку
+    className="px-4 py-4 font-black  border-3 border-black bg-green-300 hover:bg-green-200  dark:bg-green-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[100px]"
+  >
+    🎤 Новый голосовой тест
+  </button>
+
+
 
           {/* Кнопка скрытия всех слов */}
           <button
             onClick={toggleAllWordsVisibility}
-            className={`px-4 py-4 font-black border-3 border-black dark:bg-gray-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[100px]  ${
+            className={`px-4 py-4 font-black border-3 border-black hover:bg-green-200 dark:bg-gray-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[150px]  ${
               allWordsHidden
-                ? "bg-green-200 text-black hover:bg-green-300 dark:bg-green-300"
-                : "bg-green-200 text-black  dark:bg-green-200"
+                ? "bg-green-300 text-black hover:bg-green-200 dark:bg-green-300"
+                : "bg-green-300 text-black  dark:bg-green-300"
             }`}
             title={allWordsHidden ? "Показать все слова" : "Скрыть все слова"}
           >
@@ -329,8 +343,8 @@ function AddWeeker({
           <button
             className={`px-3 py-3 font-bold text-xs sm:text-base border-3 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-200 flex-1   ${
               canAdd
-                ? "bg-green-200 text-black border-black hover:bg-green-200 dark:hover:bg-green-400 transition-colors duration-300 dark:bg-green-300"
-                : "bg-green-200 text-black border-black cursor-not-allowed transition-colors duration-300"
+                ? "bg-blue-500 hover:bg-blue-400 dark:hover:bg-blue-300 text-black border-black transition-colors duration-300 dark:bg-blue-500"
+                : "bg-gray-500 text-black border-black cursor-not-allowed transition-colors duration-300"
             }`}
             onClick={() => requireAuth(handleAddClick)}
             disabled={!canAdd || loading}
@@ -351,6 +365,7 @@ function AddWeeker({
         onClose={closeSentenceTest}
         words={weekWords}
         />
+       
       </div>
     </div>
   );
