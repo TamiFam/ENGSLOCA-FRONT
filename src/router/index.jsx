@@ -1,8 +1,7 @@
-// router/index.jsx
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import WordListLayout from '../layouts/WordListLayout';
-import Home from '../pages/Home';  // <-- твой обновленный Home
+import Home from '../pages/Home';  
 import WordList from '../features/words/WordList';
 
 const router = createBrowserRouter([
