@@ -17,9 +17,21 @@ const Chat = ({ onClose }) => {
 
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  
+
+  const messagesContainerRef = useRef(null);
+
+useEffect(() => {
+  const el = messagesContainerRef.current;
+  if (!el) return;
+
+  const isAtBottom =
+    el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+
+  if (isAtBottom) {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  }
+}, [messages]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -68,24 +80,26 @@ const Chat = ({ onClose }) => {
         </div>
       </div> */}
       
-      <div className="mb-15">
+      <div className="h-12">
         {/*ЗАГЛУШКА*/}
       </div>
 
       {/* Messages Container - адаптивные отступы */}
-      <div className="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 md:space-y-3">
+      <div
+      ref={messagesContainerRef}
+       className="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 md:space-y-3">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-500 dark:text-gray-400 py-8 text-sm md:text-base">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-8 text-sm md:text-based">
             No messages yet. Start the conversation!
           </div>
         ) : (
           messages.map((message) => (
             <div
               key={message.id}
-              className={`p-2 md:p-3 rounded-lg relative ${
+              className={`p-2 md:p-3 pb-6 pr-6 rounded-lg relative  ${
                 message.isSystem
-                  ? "bg-yellow-100 dark:bg-yellow-900 border-l-2 md:border-l-4 border-yellow-500"
-                  : "bg-gray-100 dark:bg-gray-700"
+                  ? "bg-yellow-100 dark:bg-yellow-900 border-l-2 md:border-l-4 border-yellow-500  "
+                  : "bg-gray-200 dark:bg-gray-700 "
               } ${
                 message.user.role === "admin"
                   ? "border-l-2 md:border-l-4 border-red-500"
@@ -150,16 +164,16 @@ const Chat = ({ onClose }) => {
             type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            placeholder={
-              !isConnected
-                ? "Connecting..."
-                : !canSendMessages
-                ? "Viewer cannot send msg"
-                : "Type your message..."
-            }
-            disabled={!isConnected || !canSendMessages}
+            // placeholder={
+            //   !isConnected
+            //     ? "Connecting..."
+            //     : !canSendMessages
+            //     ? "Viewer cannot send msg"
+            //     : "Type your message..."
+            // }
+            // disabled={!isConnected || !canSendMessages}
             maxLength={500}
-            className="flex-1 px-2 md:px-3 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400"
+            className="flex-1 px-2 md:px-3 py-2 text-sm md:text-base border border-gray-300 dark:border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400"
           />
           <div className="flex items-center gap-1 md:gap-2">
             <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap hidden md:inline">
@@ -176,7 +190,7 @@ const Chat = ({ onClose }) => {
           </div>
         </div>
         {/* Счетчик символов для мобильных - под полем ввода */}
-        <div className="md:hidden mt-1">
+        <div className="md:hidden mt-1 ">
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {messageText.length}/500
           </span>

@@ -760,7 +760,7 @@ export default function WordList() {
      
      <div>
      {showChat && (
-  <div className="fixed top-20 left-4 right-4 bottom-4 md:left-auto md:right-4 md:top-20 md:w-96 md:bottom-4 z-50 bg-white dark:bg-gray-800 border-4 border-black shadow-2xl rounded-lg overflow-hidden">
+  <div className="fixed top-20 left-4 right-4 bottom-4 md:left-auto md:right-4 md:top-20 md:w-96 md:bottom-4 z-50 bg-white dark:bg-gray-800 border-4 border-black dark:border-gray-700 shadow-2xl rounded-lg overflow-hidden">
     <Chat onClose={() => setShowChat(false)} />
   </div>
 )}
