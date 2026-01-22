@@ -154,7 +154,7 @@ const Chat = ({ onClose }) => {
               !isConnected
                 ? "Connecting..."
                 : !canSendMessages
-                ? "Viewers cannot send messages"
+                ? "Viewer cannot send msg"
                 : "Type your message..."
             }
             disabled={!isConnected || !canSendMessages}

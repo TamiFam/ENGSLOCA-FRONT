@@ -11,8 +11,8 @@ const WordCard = React.memo(
     onDeleteClick,
     user,
   }) => {
-    const canEdit = user && (user.role === "admin" || user.role === "member");
-    const canDelete = user && user.role === "admin";
+    // const canEdit = user && (user.role === "admin" || user.role === "member");
+    // const canDelete = user && user.role === "admin";
 
     // ✅ функция для озвучки
     const speakWord = (text) => {
@@ -147,11 +147,11 @@ const WordCard = React.memo(
             </div>
           </div>
 
-          {user && (
+          {(
             <div className="flex gap-2 sm:ml-6 opacity-100 transition-opacity duration-300 self-end sm:self-start">
               <button
                 onClick={() => onEditClick(word)}
-                disabled={!canEdit}
+                // disabled={!canEdit}
                 className="w-8 h-8 sm:w-8 sm:h-8 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center shrink-0"
                 title="Редактировать"
               >
@@ -177,7 +177,7 @@ const WordCard = React.memo(
               </button>
               <button
                 onClick={() => onDeleteClick(word._id)}
-                disabled={!canDelete}
+                // disabled={!canDelete}
                 className="w-8 h-8 sm:w-8 sm:h-8 bg-red-500 text-white border-2 border-black hover:bg-red-600 transition-colors duration-200 flex items-center justify-center shrink-0"
                 title="Удалить"
               >
