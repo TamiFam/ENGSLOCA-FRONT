@@ -32,7 +32,7 @@ function AddWeeker({
   const [weekWords, setWeekWords] = useState([]);
   const [testResults,setTestResults] = useState([])
   
-  const API_BASE = "https://engsloca-back.onrender.com";
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
     // 👇 Функция загрузки слов недели
     const loadWeekWords = async (week) => {
       

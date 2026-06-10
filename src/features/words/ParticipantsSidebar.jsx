@@ -6,7 +6,7 @@ export default function ParticipantsSidebar() {
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { token, user } = useAuth();
-  const API_BASE = "https://engsloca-back.onrender.com";
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   // Мемоизируем функции
   const getRoleSymbol = useCallback((role) => {

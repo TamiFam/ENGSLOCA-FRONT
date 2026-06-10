@@ -27,7 +27,7 @@ export const useChat = () => {
       ws.current.close();
     }
 
-    const wsUrl = 'wss://engsloca-back.onrender.com/ws';        //engsloca-back.onrender.com
+    const wsUrl = import.meta.env.VITE_WS_URL       //engsloca-back.onrender.com   // wss = https   ws = http
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
