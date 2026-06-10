@@ -127,9 +127,9 @@ export default function VoiceTestModal({ isOpen, onClose }) {
               <p className="text-lg font-bold text-black dark:text-white">
                 {currentPhrase.ru}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              {/* <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Правильный ответ: "{currentPhrase.en}"
-              </p>
+              </p> */}
             </div>
 
             <div className="mb-6">

@@ -6,6 +6,7 @@ import { fetchAllWeekWords } from '../words/wordsAPI'
 import { usePage } from "../../context/PageContext";
 import SentenceTestModal from "../tests/SentenceTestModal";
 import VoiceTestModal from "../tests/voiceTestModal";
+
 function AddWeeker({
   currentWeek,
   wordsCount, 
@@ -111,8 +112,10 @@ const closeVoiceTest = () => setVoiceTestOpen(false);
         
         // Ищем тест для текущей недели И текущей страницы
         const pageTest = data.testResults.find(t => 
-          Number(t.week) === Number(currentWeek) && 
-          t.pageInfo?.page === currentPage.toString()
+          Number(t.week) === Number(currentWeek)  && (
+    t.pageInfo?.page === "all" ||
+    String(t.pageInfo?.page) === String(currentPage)
+  )
         );
         if (pageTest && pageTest.score > 50) {
           setTestResults(pageTest);
@@ -213,8 +216,11 @@ const closeVoiceTest = () => setVoiceTestOpen(false);
          const page = currentPage.toString();
          const currentWeekResult = data.testResults.find(t => 
            Number(t.week) === Number(currentWeek) && 
-           t.pageInfo?.page === page
+           String(t.pageInfo?.page) === String(page)
          );
+         console.log("Все результаты:", data.testResults);
+console.log("Текущая неделя:", currentWeek);
+console.log("Текущая страница:", currentPage);
       if (currentWeekResult) {
         setTestResults(currentWeekResult);
         // ✅ Синхронизируем состояние с серверным результатом
@@ -312,15 +318,17 @@ const closeVoiceTest = () => setVoiceTestOpen(false);
         : "bg-green-300 text-black  dark:bg-green-200 cursor-not-allowed transition-colors duration-300"
     }`}
   >
-    Новый тест c  предложениями
+   Тест c  предложениями
+  
   </button>
+  
  
-  <button
+  {/* <button
     onClick={openVoiceTest} // открывает модалку
     className="px-4 py-4 font-black  border-3 border-black bg-green-300 hover:bg-green-200  dark:bg-green-300 flex items-center justify-center transition-all  duration-200 text-xs  min-w-[100px]"
   >
-    🎤 Новый голосовой тест
-  </button>
+   Новый голосовой тест
+  </button> */}
 
 
 

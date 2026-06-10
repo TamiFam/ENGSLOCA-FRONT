@@ -116,3 +116,85 @@ export const getAvailableWeeks = async () => {
     return handleApiError(error);
   }
 };
+// wordsAPI.js - добавь эту функцию в конец файла:
+
+export const searchExactWord = async (word, week = null) => {
+  try {
+    const params = { 
+      search: word.trim(),
+      limit: 1, // Увеличим лимит для поиска
+      page: 1
+    };
+    
+    if (week) params.week = week;
+    
+    console.log('🔍 searchExactWord: Параметры запроса:', params);
+    
+    const response = await axios.get("/words", { params });
+    
+    console.log('📊 searchExactWord: Ответ API:', {
+      status: response.status,
+      data: response.data,
+      wordsCount: response.data?.words?.length || 0,
+      firstWord: response.data?.words?.[0]
+    });
+    
+    // Ищем точное совпадение
+    const words = response.data?.words || [];
+    const searchTerm = word.trim().toLowerCase();
+    
+    let exactMatch = null;
+    for (const w of words) {
+      if (w.word && w.word.toLowerCase() === searchTerm) {
+        exactMatch = w;
+        break;
+      }
+    }
+    
+    // Если не нашли точное совпадение, берем первое слово
+    if (!exactMatch && words.length > 0) {
+      exactMatch = words[0];
+      console.log(`⚠️ Точное совпадение не найдено, берем первое: "${exactMatch.word}"`);
+    }
+    
+    const result = {
+      ...response,
+      data: {
+        ...response.data,
+        found: !!exactMatch,
+        exactMatch: exactMatch,
+        message: exactMatch 
+          ? `Найдено слово: "${exactMatch.word}"` 
+          : `Слово "${word}" не найдено`
+      }
+    };
+    
+    console.log('✅ searchExactWord: Итоговый результат:', {
+      found: result.data.found,
+      exactMatch: result.data.exactMatch,
+      exactMatchKeys: exactMatch ? Object.keys(exactMatch) : 'нет'
+    });
+    
+    return result;
+    
+  } catch (error) {
+    console.error('❌ searchExactWord: Ошибка:', error);
+    
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      return handleApiError(error);
+    }
+    
+    if (error.response?.status === 404 || error.response?.status === 500) {
+      return {
+        data: {
+          words: [],
+          found: false,
+          exactMatch: null,
+          message: `Слово "${word}" не найдено`
+        }
+      };
+    }
+    
+    return handleApiError(error);
+  }
+};

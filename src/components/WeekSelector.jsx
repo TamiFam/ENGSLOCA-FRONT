@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getAvailableWeeks } from "../features/words/wordsAPI";
 import { WeekStats } from "./WeekStats";
 
+
 export default function WeekSelector({ currentWeek, onWeekChange, currentPage, onPageChange, getPagesCount,wordsCount }) {
   const [weeks, setWeeks] = useState([])
   const [newWeek, setNewWeek] = useState("");
@@ -191,6 +192,9 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
             </div>
           )}
         </div>
+
+        
+
         <WeekStats 
         position="left"
         wordsCount={wordsCount}
@@ -201,6 +205,7 @@ export default function WeekSelector({ currentWeek, onWeekChange, currentPage, o
         wordsCount={wordsCount}
         />
       </div>
+     
     </div>
   );
 }

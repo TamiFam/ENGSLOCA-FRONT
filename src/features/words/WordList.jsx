@@ -19,29 +19,33 @@ import AddWeeker from "./AddWeeker";
 
 import WordsPageSwitcher from "./WordsPageSwitcher";
 import WordCard from "./WordCard";
-import '../../../styles/snow.css'; 
+import "../../../styles/snow.css";
 import { useTheme } from "../../hooks/useTheme";
 import { Snowflakes } from "../../effect/snow/snowflakes";
 import { usePage } from "../../context/PageContext";
 import Chat from "../../components/Chat";
+import { WordSearch } from "../../components/WordSearch";
+import WordsStats from "../../components/wordsStats";
+
 
 export default function WordList() {
-  const {changePage} = usePage()
+  const { changePage } = usePage();
   const { user, logout } = useAuth();
-  const {theme, toggleTheme} = useTheme()
+  const { theme, toggleTheme } = useTheme();
   const [words, setWords] = useState([]);
   const [currentWeek, setCurrentWeek] = useState(() => {
     const saved = localStorage.getItem("currentWeek");
     return saved ? parseInt(saved) : 1; // По умолчанию 1, а не undefined
   });
- const {currentPage} = usePage()
- const page = Number(currentPage)
+  const { currentPage } = usePage();
+  const page = Number(currentPage);
   const [weekPages, setWeekPages] = useState(() => {
     const saved = localStorage.getItem("weekPages");
     return saved ? JSON.parse(saved) : {};
   });
-  const [backgroundWords, setBackgroundWords] = useState([])
+  const [backgroundWords, setBackgroundWords] = useState([]);
   const [showChat, setShowChat] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   const [wordModalOpen, setWordModalOpen] = useState(false);
   const [wordInfoModal, setWordInfoModal] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -57,6 +61,9 @@ export default function WordList() {
   const [allWordsHidden, setAllWordsHidden] = useState(false);
   const [totalWordsCount, setTotalWordsCount] = useState(0);
 
+  const [searchResult, setSearchResult] = useState(null); // { word: null, found: false, query: '' }
+
+
   useEffect(() => {
     localStorage.setItem("weekPages", JSON.stringify(weekPages));
   }, [weekPages]);
@@ -65,6 +72,71 @@ export default function WordList() {
   const showToast = (message, type = "info") => {
     setToast({ message, type });
   };
+ // Вместо них добавь эти:
+
+
+ // Временно замени handleSearchResult на тестовую версию:
+const handleSearchResult = (result) => {
+  console.log('🔍 Получен результат поиска:', result);
+  
+  // Если результат null или undefined
+  if (!result) {
+    console.log('⚠️ Результат null/undefined');
+    setSearchResult(null);
+    return;
+  }
+  
+  // Если результат пришел, но без word (только found: false)
+  if (result.found === false) {
+    console.log('❌ Слово не найдено:', result.query);
+    setSearchResult(result);
+    return;
+  }
+  
+  // Если есть word - проверяем структуру
+  if (result.word) {
+    console.log('✅ Найдено слово, проверяем структуру:', {
+      word: result.word,
+      hasId: '_id' in result.word,
+      hasWord: 'word' in result.word,
+      hasTranslation: 'translation' in result.word
+    });
+    
+    // Если у слова нет нужных полей, добавляем моковые
+    if (!result.word._id || !result.word.word) {
+      console.log('⚠️ У слова неполная структура, добавляем моковые данные');
+      const mockWord = {
+        _id: 'search_' + Date.now(),
+        word: result.word.word || result.query || 'Unknown',
+        translation: result.word.translation || 'Перевод не найден',
+        transcriptionUK: result.word.transcriptionUK || '[test]',
+        partOfSpeech: result.word.partOfSpeech || 'noun',
+        category: result.word.category || 'search',
+        week: result.word.week || currentWeek,
+        examples: result.word.examples || ['Пример использования'],
+        notes: result.word.notes || 'Найдено через поиск',
+        createdAt: result.word.createdAt || new Date().toISOString(),
+        author: result.word.author || { _id: 'system', username: 'System' }
+      };
+      
+      setSearchResult({
+        ...result,
+        word: mockWord
+      });
+    } else {
+      setSearchResult(result);
+    }
+  } else {
+    console.log('⚠️ Нет поля word в результате');
+    setSearchResult(result);
+  }
+};
+
+const handleClearSearch = () => {
+  setSearchResult(null);
+};
+
+
 
   const handlePageChange = (newPage) => {
     changePage(newPage);
@@ -79,8 +151,6 @@ export default function WordList() {
       }));
     }
   };
-
-
 
   const closeToast = () => {
     setToast(null);
@@ -163,9 +233,9 @@ export default function WordList() {
         setTotalPages(res.data.pages || 1);
         setTotalWordsCount(res.data.total || 0);
         // 🔥 Кешируем слова для фона только если массив пустой
-      if (backgroundWords.length === 0 && res.data.words.length > 0) {
-        setBackgroundWords(res.data.words);
-      }
+        if (backgroundWords.length === 0 && res.data.words.length > 0) {
+          setBackgroundWords(res.data.words);
+        }
       } else {
         setWords([]);
         setTotalPages(1);
@@ -217,7 +287,7 @@ export default function WordList() {
     [user, showToast]
   ); // ← зависимости: user и showToast
   const mixWords = () => {
-    setWords(prevWords => {
+    setWords((prevWords) => {
       const shuffled = [...prevWords];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -233,8 +303,6 @@ export default function WordList() {
       setAuthModalOpen(true);
       return;
     }
-
-    
 
     // 👇 Проверка прав для удаления
     if (!canDelete(user)) {
@@ -396,8 +464,7 @@ export default function WordList() {
         setAllWordsHidden={setAllWordsHidden}
       />
     );
-  }, [currentWeek, loading, allWordsHidden,]);
-  
+  }, [currentWeek, loading, allWordsHidden]);
 
   // ✅ Мемоизируем WeekSelector
 
@@ -444,92 +511,89 @@ export default function WordList() {
     [authModalOpen, authError]
   );
 
-
   return (
-    
     <div className="min-h-screen bg-white dark:bg-black relative overflow-x-hidden ">
-        {/* Кнопка переключения темы */}
-        <style>
-{`
+      {/* Кнопка переключения темы */}
+      <style>
+        {`
   @keyframes themeSwitch {
     0% { transform: scale(0.8) rotate(0deg); opacity: 0.5; }
     50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
     100% { transform: scale(1) rotate(360deg); opacity: 1; }
   }
 `}
-</style>
+      </style>
 
+      <button
+        onClick={toggleTheme}
+        className="p-2 rounded-full m-2 bg-white dark:bg-black relative overflow-hidden"
+      >
+        <span
+          key={theme}
+          className="text-3xl inline-block animate-[themeSwitch_0.6s_ease-in-out]"
+        >
+          {theme === "dark" ? "🌙" : "☀️"}
+        </span>
+      </button>
 
-<button
-  onClick={toggleTheme}
-  className="p-2 rounded-full m-2 bg-white dark:bg-black relative overflow-hidden"
+      <button
+        onClick={() => setShowChat(!showChat)}
+        className="fixed top-4 right-4 z-50 p-3 bg-blue-500 border-3 text-sm border-black text-white rounded-full shadow-lg hover:bg-blue-600 dark:border-3 dark:border-green-200 transition-colors duration-200 hidden md:block"
+        title="Community Chat"
+      >
+        {showChat ? "✕" : "💬"}
+      </button>
+   <button
+  onClick={() => setShowStats(!showStats)}
+  className="absolute top-103 right-96 z-50 w-12 h-12 bg-yellow-400 border-3 border-black text-black dark:border-gray-600 shadow-[4px_4px_0px_0px_black] dark:shadow-[6px_6px_0px_0px_gray] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-150"
 >
-  <span 
-    key={theme}
-    className="text-3xl inline-block animate-[themeSwitch_0.6s_ease-in-out]"
-  >
-    {theme === 'dark' ? '🌙' : '☀️'}
-  </span>
-</button>
-
-<button
-  onClick={() => setShowChat(!showChat)}
-  className="fixed top-4 right-4 z-50 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 hidden md:block"
-  title="Community Chat"
->
-  {showChat ? '✕' : '💬'}
+  📊
 </button>
 
       {/* Toast уведомление */}
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={closeToast} />
       )}
-      
+
       {/* СНЕЖИНКИ */}
-   <Snowflakes/>
-   
+      <Snowflakes />
 
-{/* Абстрактные геометрические фигуры - скрыты на мобильных */}
-<div className="fixed inset-0 pointer-events-none hidden md:block z-10">
- 
-  {/* Плавающие слова с анимацией */}
-  <div className="absolute top-14 left-10 text-3xl font-black  dark:text-white  text-gray-800 opacity-35 transform -rotate-12 animate-float-1 blur-[3px]">
-    {backgroundWords[1]?.word}
-  </div>
-  <div className="absolute top-12 right-16 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-6 animate-float-2 blur-[3px]">
-    {backgroundWords[0]?.translation}
-  </div>
-  <div className="absolute bottom-28 left-20 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-45 animate-float-3 blur-[2px]">
-    {backgroundWords[2]?.word}
-  </div>
-  <div className="absolute bottom-36 right-24 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-45 animate-float-4 blur-[3px]">
-    {backgroundWords[3]?.word}
-  </div>
-  <div className="absolute top-1/3 left-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-12 animate-float-5 blur-[2px]">
-    {backgroundWords[5]?.translation}
-  </div>
-  <div className="absolute top-2/3 right-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform -rotate-8 animate-float-6 blur-[3px]">
-    {backgroundWords[6]?.word}
-  </div>
- 
+      {/* Абстрактные геометрические фигуры - скрыты на мобильных */}
+      <div className="fixed inset-0 pointer-events-none hidden md:block z-10">
+        {/* Плавающие слова с анимацией */}
+        <div className="absolute top-14 left-10 text-3xl font-black  dark:text-white  text-gray-800 opacity-35 transform -rotate-12 animate-float-1 blur-[3px]">
+          {backgroundWords[1]?.word}
+        </div>
+        <div className="absolute top-12 right-16 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-6 animate-float-2 blur-[3px]">
+          {backgroundWords[0]?.translation}
+        </div>
+        <div className="absolute bottom-28 left-20 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-45 animate-float-3 blur-[2px]">
+          {backgroundWords[2]?.word}
+        </div>
+        <div className="absolute bottom-36 right-24 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-45 animate-float-4 blur-[3px]">
+          {backgroundWords[3]?.word}
+        </div>
+        <div className="absolute top-1/3 left-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform rotate-12 animate-float-5 blur-[2px]">
+          {backgroundWords[5]?.translation}
+        </div>
+        <div className="absolute top-2/3 right-1/4 text-3xl font-black dark:text-white text-gray-800 opacity-35 transform -rotate-8 animate-float-6 blur-[3px]">
+          {backgroundWords[6]?.word}
+        </div>
 
-  {/* Дополнительные слова для большего заполнения */}
-  <div className="absolute top-40 left-1/2 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-3 animate-float-7 blur-[3px]">
-    {backgroundWords[7]?.translation}
-  </div>
-  <div className="absolute bottom-10 right-1/3 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-15 animate-float-8 blur-[3px]">
-    {backgroundWords[8]?.word}
-  </div>
-  <div className="absolute top-1/4 right-8 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-20 animate-float-9 blur-[3px]">
-    {backgroundWords[9]?.translation}
-  </div>
-  <div className="absolute bottom-44 left-1/4 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-25 animate-float-10 blur-[3px]">
-    {backgroundWords[10]?.word}
-  </div>
-</div>
-
-
-
+        {/* Дополнительные слова для большего заполнения */}
+        <div className="absolute top-40 left-1/2 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-3 animate-float-7 blur-[3px]">
+          {backgroundWords[7]?.translation}
+        </div>
+        <div className="absolute bottom-10 right-1/3 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-15 animate-float-8 blur-[3px]">
+          {backgroundWords[8]?.word}
+        </div>
+        <div className="absolute top-1/4 right-8 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform -rotate-20 animate-float-9 blur-[3px]">
+          {backgroundWords[9]?.translation}
+        </div>
+        <div className="absolute bottom-44 left-1/4 text-3xl font-black  dark:text-white text-gray-800 opacity-35 transform rotate-25 animate-float-10 blur-[3px]">
+          {backgroundWords[10]?.word}
+        </div>
+      </div>
 
       {/* Грубые линии-разделители */}
       <div className="fixed top-0 left-0 w-full h-1 bg-black"></div>
@@ -538,7 +602,7 @@ export default function WordList() {
       <div className="fixed top-0 right-0 w-1 h-full bg-black"></div>
 
       {/* Мобильное меню */}
-      {wordModalOpen === true  ? null : (
+      {wordModalOpen === true ? null : (
         <div className="fixed top-4 right-4 z-50 md:hidden">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -555,39 +619,36 @@ export default function WordList() {
         <div className="fixed inset-0 bg-white z-40 p-6 md:hidden dark:bg-black  ">
           <div className="pt-16 ">
             {user ? (
-              
               <div className="space-y-4 mb-8 ">
-                        {/* 👇 КНОПКА ЧАТА В МОБИЛЬНОМ МЕНЮ */}
-          <button
-            onClick={() => {
-              setShowChat(!showChat);
-              setMobileMenuOpen(false); // закрываем меню при открытии чата
-            }}
-            className="bg-blue-200 border-2 border-black px-4 py-3 text-base font-bold hover:bg-blue-300 transition-colors duration-200 w-full"
-          >
-            {showChat ? '✕ Закрыть чат' : '💬 Открыть чат'}
-          </button>
+                {/* 👇 КНОПКА ЧАТА В МОБИЛЬНОМ МЕНЮ */}
+                <button
+                  onClick={() => {
+                    setShowChat(!showChat);
+                    setMobileMenuOpen(false); // закрываем меню при открытии чата
+                  }}
+                  className="bg-blue-200 border-2 border-black px-4 py-3 text-base font-bold hover:bg-blue-300 transition-colors duration-200 w-full"
+                >
+                  {showChat ? "✕ Закрыть чат" : "💬 Открыть чат"}
+                </button>
                 <div className="bg-green-200 border-2 border-black  px-4 py-3 text-base font-bold ">
                   ✅ {user.username}
                 </div>
-            
+
                 <button
                   onClick={logout}
                   className="bg-red-200 border-2 border-black px-4 py-3 text-base font-bold hover:bg-red-300 transition-colors duration-200 w-full "
                 >
                   🚪 Выйти
                 </button>
-           
               </div>
             ) : (
-              <div className="bg-yellow-200   border-2 border-black px-4 py-2 text-sm font-bold mb-4 mt-4 flex justify-center">                
+              <div className="bg-yellow-200   border-2 border-black px-4 py-2 text-sm font-bold mb-4 mt-4 flex justify-center">
                 <button onClick={() => setAuthModalOpen(true)}>
                   🔒 Требуется авторизация
                 </button>
               </div>
-              
             )}
-{authModal}
+            {authModal}
             <div className="mb-8">
               <ParticipantsSidebar />
             </div>
@@ -612,8 +673,10 @@ export default function WordList() {
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Хедер*/}
         <div className="text-center mb-8 sm:mb-16">
-          <div className="inline-block bg-yellow-300 dark:bg-blue-300 border-4 border-black  px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 rotate-1 sm:rotate-2 hover:rotate-0 transition-transform
-           duration-300">
+          <div
+            className="inline-block bg-yellow-300 dark:bg-blue-300 border-4 border-black  px-4 sm:px-8 py-3 sm:py-4 mb-4 sm:mb-6 rotate-1 sm:rotate-2 hover:rotate-0 transition-transform
+           duration-300"
+          >
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight leading-tight">
               ENGLISH
               <br />
@@ -623,14 +686,14 @@ export default function WordList() {
 
           <div className="bg-white border-4 border-black dark:bg-blue-100 inline-block px-4 sm:px-6 py-2 sm:py-3 -rotate-1 sm:-rotate-1 hover:rotate-0 transition-transform duration-300">
             <p className="text-base sm:text-xl font-bold text-gray-800">
-            Изучаем слова со  всем миром 🎯
+              Изучаем слова со всем миром 🎯
             </p>
           </div>
 
           {/* Десктопная версия пользовательской информации */}
           <div className="hidden md:block">
             {user ? (
-              <div className="flex items-center justify-center gap-4 mt-6 sm:mt-8 " >
+              <div className="flex items-center justify-center gap-4 mt-6 sm:mt-8 ">
                 <div className="bg-green-200 border-2 border-black px-4 py-2 text-sm font-bold ">
                   ✅ {user.username}
                 </div>
@@ -660,112 +723,189 @@ export default function WordList() {
           getPagesCount={getPagesCount}
           wordsCount={totalWordsCount}
         />
-        
+
         {/* ВТОРАЯ СЕКЦИЯ С "ДОБАВИТЬ СЛОВО"*/}
         {memoizedAddWeeker}
 
         {/* Список слов с адаптивным дизайном */}
-        {loading ? (
-          <div className="bg-white border-4 border-black p-8 sm:p-12 text-center dark:bg-gray-700 ">
-            <div className="flex justify-center space-x-2 ">
-              <div className="w-3 h-3 bg-black animate-bounce"></div>
-              <div
-                className="w-3 h-3 bg-black animate-bounce"
-                style={{ animationDelay: "0.1s" }}
-              ></div>
-              <div
-                className="w-3 h-3 bg-black animate-bounce"
-                style={{ animationDelay: "0.2s" }}
-              ></div>
-            </div>
-          </div>
-        ) : words.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 border-4 border-black p-8 sm:p-12 lg:p-16 text-center relative">
-            <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🔄</div>
-            <h3 className="text-xl sm:text-2xl font-black text-black mb-3 sm:mb-4">
-              {currentWeek === 1 ? "ПУСТОТА" : `WEEK ${currentWeek} EMPTY`}
-            </h3>
-            <p className="text-gray-600 font-bold text-sm sm:text-base">
-              НАЧНИТЕ ДОБАВЛЯТЬ СЛОВА
-            </p>
-          </div>
-        ) : (
-          <>
-            <WordsPageSwitcher
-              totalPages={totalPages}
-              page={page}
-              onPrev={handlePrevPage}
-              onNext={handleNextPage}
-              onSelectPage={changePage}
-            />
-            <div className="flex justify-center items-center pb-9">
-            <button
-  onClick={mixWords}
-  className="
-    bg-black hover:bg-gray-800
-    dark:bg-white dark:hover:bg-gray-200
-    border-2 border-black dark:border-white
-    px-6 py-3
-    font-bold text-white dark:text-black
-    transition-all duration-300
-    hover:scale-105
-    active:scale-95
-    group
-  "
->
-  <span className="flex items-center gap-2">
-    <span className="group-hover:rotate-90 transition-transform duration-300">↻</span>
-    SHUFFLE
-    <span className="group-hover:-rotate-90 transition-transform duration-300">↺</span>
-  </span>
-</button>
-            </div>
-            <div className="space-y-4 sm:space-y-6">
-              {words.map((w, index) => (
-                <WordCard
-                  key={w._id}
-                  word={w}
-                  index={index}
-                  allWordsHidden={allWordsHidden}
-                  onEditClick={stableHandleEditClick}
-                  onWordInfo={stableHandleWordInfo}
-                  onDeleteClick={handleDeleteClick}
-                  user={user}
-                />
-              ))}
-            </div>
-            <WordsPageSwitcher
-              totalPages={totalPages}
-              page={page}
-              onPrev={handlePrevPage}
-              onNext={handleNextPage}
-              onSelectPage={changePage}
-            />
-          </>
-        )}
+       {/* Список слов с адаптивным дизайном */}
+{loading ? (
+  <div className="bg-white border-4 border-black p-8 sm:p-12 text-center dark:bg-gray-700 ">
+    <div className="flex justify-center space-x-2 ">
+      <div className="w-3 h-3 bg-black animate-bounce"></div>
+      <div
+        className="w-3 h-3 bg-black animate-bounce"
+        style={{ animationDelay: "0.1s" }}
+      ></div>
+      <div
+        className="w-3 h-3 bg-black animate-bounce"
+        style={{ animationDelay: "0.2s" }}
+      ></div>
+    </div>
+  </div>
+) : (
+  <>
+    <WordsPageSwitcher
+      totalPages={totalPages}
+      page={page}
+      onPrev={handlePrevPage}
+      onNext={handleNextPage}
+      onSelectPage={changePage}
+    />
+    <div className="flex justify-center items-center pb-9">
+      <button
+        onClick={mixWords}
+        className="
+          bg-black hover:bg-gray-800
+          dark:bg-white dark:hover:bg-gray-200
+          border-2 border-black dark:border-white
+          px-6 py-3
+          font-bold text-white dark:text-black
+          transition-all duration-300
+          hover:scale-105
+          active:scale-95
+          group
+        "
+      >
+        <span className="flex items-center gap-2">
+          <span className="group-hover:rotate-90 transition-transform duration-300">
+            ↻
+          </span>
+          SHUFFLE
+          <span className="group-hover:-rotate-90 transition-transform duration-300">
+            ↺
+          </span>
+        </span>
+      </button>
+    </div>
+    <div className="mb-6 relative">
+      <div className="absolute -top-4 right-0">
+        <WordSearch 
+          currentWeek={currentWeek}
+          showToast={showToast}
+          onSearchResult={handleSearchResult}
+        />
+      </div>
+    </div>
 
-       
+    {/* ВАЖНО: Показываем или результат поиска, или все слова */}
+    {searchResult ? (
+      <div className="space-y-4 sm:space-y-6">
+        {/* Минимальная панель с кнопкой возврата */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleClearSearch}
+            className="text-sm text-red-500 hover:text-black dark:hover:text-white px-3 py-1  pt-4 border border-gray-400 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="Вернуться ко всем словам"
+          >
+            ← Вернуться
+          </button>
+        </div>
+
+        {/* Показываем найденное слово ИЛИ сообщение "не найдено" */}
+        {searchResult.found ? (
+          <WordCard
+            key={`search-${searchResult.word._id}`}
+            word={searchResult.word}
+            index={0}
+            allWordsHidden={allWordsHidden}
+            onEditClick={stableHandleEditClick}
+            onWordInfo={stableHandleWordInfo}
+            onDeleteClick={handleDeleteClick}
+            user={user}
+          />
+        ) : (
+          <div className="bg-white dark:bg-gray-800 border-4 border-black dark:border-gray-700 p-8 text-center">
+            <div className="text-4xl mb-4">🔍</div>
+            <h3 className="text-xl font-bold text-black dark:text-white mb-2">
+              Слово не найдено
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              "{searchResult.query}" не найдено в неделе {currentWeek}
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={handleClearSearch}
+                className="w-full max-w-xs mx-auto bg-black dark:bg-white text-white dark:text-black px-6 py-3 font-bold border-2 border-black dark:border-white hover:bg-gray-800 dark:hover:bg-gray-200"
+              >
+                Вернуться ко всем словам
+              </button>
+              <p className="text-sm text-gray-500">
+                Проверьте правильность написания
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    ) : words.length === 0 ? (
+      // НЕТ СЛОВ: показываем сообщение о пустоте
+      <div className="bg-white dark:bg-gray-800 border-4 border-black p-8 sm:p-12 lg:p-16 text-center relative">
+        <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🔄</div>
+        <h3 className="text-xl sm:text-2xl font-black text-black mb-3 sm:mb-4">
+          {currentWeek === 1 ? "ПУСТОТА" : `WEEK ${currentWeek} EMPTY`}
+        </h3>
+        <p className="text-gray-600 font-bold text-sm sm:text-base">
+          НАЧНИТЕ ДОБАВЛЯТЬ СЛОВА
+        </p>
+      </div>
+    ) : (
+      // ОБЫЧНЫЙ РЕЖИМ: показываем все 10 слов
+      <div className="space-y-4 sm:space-y-6">
+        {words.map((w, index) => (
+          <WordCard
+            key={w._id}
+            word={w}
+            index={index}
+            allWordsHidden={allWordsHidden}
+            onEditClick={stableHandleEditClick}
+            onWordInfo={stableHandleWordInfo}
+            onDeleteClick={handleDeleteClick}
+            user={user}
+          />
+        ))}
+      </div>
+    )}
+
+    {/* Пейджер показываем только если НЕ в режиме поиска */}
+    {!searchResult && words.length > 0 && (
+      <WordsPageSwitcher
+        totalPages={totalPages}
+        page={page}
+        onPrev={handlePrevPage}
+        onNext={handleNextPage}
+        onSelectPage={changePage}
+      />
+    )}
+  </>
+)}
+
         {worldInfoModal}
 
         {wordModal}
 
         {authModal}
-        
       </div>
 
       {/* Футер в стиле минимализм */}
       <div className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 text-xs text-gray-500 font-mono">
         ENGLISH WORDS v1.5
       </div>
-     
-     <div>
-     {showChat && (
-  <div className="fixed top-20 left-4 right-4 bottom-4 md:left-auto md:right-4 md:top-20 md:w-96 md:bottom-4 z-50 bg-white dark:bg-gray-800 border-4 border-black dark:border-gray-700 shadow-2xl rounded-lg overflow-hidden">
-    <Chat onClose={() => setShowChat(false)} />
-  </div>
-)}
-     </div>
+
+      <div>
+          {showStats && (
+    <div className="fixed top-10 left-4 right-4 bottom-4 md:left-auto md:right-4 md:top-20 md:w-86 md:bottom-4 z-50 bg-white dark:bg-gray-800 border-4 border-black dark:border-gray-700 shadow-2xl rounded-lg overflow-hidden">
+      <WordsStats onClose={() => setShowStats(false)} userId={user?._id} />
     </div>
-    
+  )}
+        {showChat && (
+          <div className="fixed top-10 left-4 right-4 bottom-4 md:left-auto md:right-4 md:top-20 md:w-96 md:bottom-4 z-50 bg-white dark:bg-gray-800 border-4 border-black dark:border-gray-700 shadow-2xl rounded-lg overflow-hidden">
+            <Chat onClose={() => setShowChat(false)} />
+               
+          </div>
+        )}
+        
+      </div>
+      
+    </div>
   );
 }

@@ -6,13 +6,13 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(),tailwindcss()],
   server: {
-    // proxy: {
-    //   // 👇 ПРОКСИРУЙ ВСЕ ЗАПРОСЫ /api НА БЭКЕНД
-    //   '/api': {
-    //     target: 'http://localhost:5000',
-    //     changeOrigin: true,
-    //     secure: false,
-    //   }
-    // }
+    proxy: {
+      // 👇 ПРОКСИРУЙ ВСЕ ЗАПРОСЫ /api НА БЭКЕНД
+      '/api': {
+        target: 'https://engsloca-back.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   }
 })

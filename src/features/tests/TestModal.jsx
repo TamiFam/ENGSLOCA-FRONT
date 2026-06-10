@@ -205,7 +205,7 @@ export default function TestModal({
 
     return distance <= maxAllowedErrors;
   };
-
+     // Левенштейн
   const calculateLevenshteinDistance = (a, b) => {
     const matrix = [];
 
@@ -474,6 +474,7 @@ export default function TestModal({
                     ? weekWords.slice(0, 10)
                     : getCurrentPageWords()
                   ).map((word, index) => (
+                   
                     <div
                       key={word._id}
                       className="p-2 rounded-lg bg-gray-700/50 border border-gray-600"
