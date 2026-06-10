@@ -27,7 +27,7 @@ export const useChat = () => {
       ws.current.close();
     }
 
-    const wsUrl = 'ws://engsloca-back.onrender.com/ws';        //engsloca-back.onrender.com
+    const wsUrl = 'wss://engsloca-back.onrender.com/ws';        //engsloca-back.onrender.com
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
