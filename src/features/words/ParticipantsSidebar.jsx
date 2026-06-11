@@ -42,7 +42,7 @@ export default function ParticipantsSidebar() {
     
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/users/status`, {
+      const res = await fetch(`${API_BASE}/api/users/status`, {
       
         credentials: 'include'
       });
